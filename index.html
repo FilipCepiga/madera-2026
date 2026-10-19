@@ -1,0 +1,1031 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>Madera 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+<style>
+/* Layout: an app shell. Basalt hero with live trip status, sticky day rail, then the day as a timeline
+   beside a context column (sun, weather, cams, food). Sections switch via a tab bar (bottom on phones). */
+:root{
+  --bg:#EDF1EE;          /* laurissilva mist */
+  --surface:#FFFFFF;
+  --surface-2:#E3E9E5;
+  --ink:#13201B;
+  --muted:#5B6B64;
+  --line:#CBD5D0;
+  --ocean:#0D5C74;       /* Atlantic */
+  --ocean-soft:#D6E8EE;
+  --laurel:#2F6B3E;      /* forest / trails */
+  --laurel-soft:#DCEBDF;
+  --strelitzia:#D9641E;  /* the one warm accent */
+  --strelitzia-soft:#FBE4D4;
+  --warn:#9A5B00; --warn-soft:#FBEFD5;
+  --stop:#A3261F; --stop-soft:#F8DEDB;
+  --basalt:#0F1614; --basalt-ink:#F1F4F2; --basalt-muted:#9FB0A8;
+  --night:#1B2A33; --twilight:#5C7C92; --day:#F3D99B; --gold:#E9A23B;
+  --pr-y:#F2C230; --pr-r:#C8312A;
+  --shadow:0 1px 2px rgb(15 22 20 / .06),0 8px 24px -12px rgb(15 22 20 / .18);
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B110F; --surface:#131B18; --surface-2:#1A2420; --ink:#E6ECE9; --muted:#93A39C; --line:#26332E;
+  --ocean:#5DB3CF; --ocean-soft:#12303A; --laurel:#7CC08C; --laurel-soft:#16301E;
+  --strelitzia:#F08A4B; --strelitzia-soft:#3A2214; --warn:#E9B85A; --warn-soft:#33270F; --stop:#F08A80; --stop-soft:#3A1A17;
+  --basalt:#070B0A; --basalt-ink:#F1F4F2; --basalt-muted:#8FA198;
+  --night:#0E1A21; --twilight:#33536A; --day:#6E5E33; --gold:#E9A23B;
+  --shadow:0 1px 2px rgb(0 0 0 / .4),0 10px 28px -14px rgb(0 0 0 / .7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B110F; --surface:#131B18; --surface-2:#1A2420; --ink:#E6ECE9; --muted:#93A39C; --line:#26332E;
+  --ocean:#5DB3CF; --ocean-soft:#12303A; --laurel:#7CC08C; --laurel-soft:#16301E;
+  --strelitzia:#F08A4B; --strelitzia-soft:#3A2214; --warn:#E9B85A; --warn-soft:#33270F; --stop:#F08A80; --stop-soft:#3A1A17;
+  --basalt:#070B0A; --basalt-ink:#F1F4F2; --basalt-muted:#8FA198;
+  --night:#0E1A21; --twilight:#33536A; --day:#6E5E33; --gold:#E9A23B;
+  --shadow:0 1px 2px rgb(0 0 0 / .4),0 10px 28px -14px rgb(0 0 0 / .7); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--ocean)}
+:focus-visible{outline:2px solid var(--strelitzia);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+.wrap{max-width:1180px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;font:600 14px/1 var(--f-body);padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;cursor:pointer}
+.btn:hover{border-color:var(--ocean);color:var(--ocean)}
+.btn.primary{background:var(--ocean);border-color:var(--ocean);color:var(--surface)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--surface)}
+.btn svg{width:16px;height:16px}
+
+/* HERO */
+.hero{background:var(--basalt);color:var(--basalt-ink);position:relative;overflow:hidden}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
+.hero .wrap{position:relative;padding-block:28px 26px;display:grid;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--basalt-muted)}
+.brand .pr{display:inline-grid;width:22px;height:14px;grid-template-rows:1fr 1fr;border-radius:2px;overflow:hidden}
+.brand .pr i:first-child{background:var(--pr-y)} .brand .pr i:last-child{background:var(--pr-r)}
+.hero h1{font-size:clamp(48px,10vw,112px);font-weight:800;line-height:.88;letter-spacing:-.035em}
+.hero h1 span{color:var(--strelitzia)}
+.hero-row{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end;justify-content:space-between}
+.hero-meta{display:flex;flex-wrap:wrap;gap:8px 22px;color:var(--basalt-muted);font-size:14px}
+.hero-meta b{color:var(--basalt-ink);font-weight:700}
+.status{display:flex;gap:14px;align-items:center;background:rgb(255 255 255 / .06);border:1px solid rgb(255 255 255 / .12);border-radius:var(--r);padding:12px 16px;backdrop-filter:blur(6px)}
+.status .big{font-family:var(--f-display);font-size:34px;font-weight:800;line-height:1}
+.status .lbl{font-size:13px;color:var(--basalt-muted);line-height:1.3}
+.status .lbl b{color:var(--basalt-ink)}
+
+/* TABS */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:8px}
+.tabs .wrap::-webkit-scrollbar{display:none}
+.tab{flex:none;display:inline-flex;align-items:center;gap:7px;font:600 14px/1 var(--f-body);color:var(--muted);background:none;border:0;padding:10px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.tab svg{width:17px;height:17px}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tab:not([aria-selected="true"]):hover{color:var(--ink);background:var(--surface-2)}
+
+main{padding-block:22px 110px}
+section[data-view]{display:grid;gap:22px}
+
+/* DAY RAIL */
+.days{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;position:relative}
+.day-pill{display:grid;gap:2px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font:inherit;position:relative}
+.day-pill .dow{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.day-pill .dnum{font-family:var(--f-display);font-weight:800;font-size:22px;line-height:1.05}
+.day-pill .dplace{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-pill[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.day-pill .today{position:absolute;top:8px;right:8px;font:600 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--surface);background:var(--strelitzia);padding:4px 6px;border-radius:999px}
+@media (max-width:720px){.days{grid-template-columns:repeat(6,minmax(84px,1fr));overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.days::-webkit-scrollbar{display:none}}
+
+/* DAY LAYOUT */
+.day-head{display:grid;gap:10px}
+.day-head h2{font-size:clamp(28px,4.4vw,44px);font-weight:800;line-height:1.02}
+.day-head .sub{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--muted);font-size:14px;align-items:center}
+.day-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.day-grid{grid-template-columns:minmax(0,1fr)}}
+.side{display:grid;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0}
+.panel h3{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.panel h3 small{font:400 12px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+
+/* DAYLIGHT STRIP */
+.daylight{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 10px;display:grid;gap:8px}
+.daylight .facts{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px}
+.daylight .facts span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.daylight .facts b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.daylight svg{width:100%;height:auto;display:block;overflow:visible}
+.dl-night{fill:var(--night)} .dl-tw{fill:var(--twilight)} .dl-day{fill:var(--day)} .dl-gold{fill:var(--gold);opacity:.55}
+.dl-tick{fill:var(--muted);font:500 11px var(--f-mono)}
+.dl-stop{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.dl-stop.trek{stroke:var(--laurel)} .dl-stop.done{fill:var(--ink)}
+.dl-now{stroke:var(--strelitzia);stroke-width:2}
+.dl-now-l{fill:var(--strelitzia);font:600 11px var(--f-mono)}
+
+/* TIMELINE */
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.stop{display:grid;grid-template-columns:76px 22px minmax(0,1fr);gap:0 12px;position:relative}
+.stop .time{padding-top:14px;text-align:right;font-family:var(--f-mono);font-size:13px;color:var(--muted);line-height:1.3}
+.stop .time b{display:block;color:var(--ink);font-size:15px;font-weight:500}
+.stop .rail{position:relative;display:flex;justify-content:center}
+.stop .rail::before{content:"";position:absolute;top:0;bottom:0;width:2px;background:var(--line)}
+.stop:first-child .rail::before{top:22px} .stop:last-child .rail::before{bottom:calc(100% - 22px)}
+.stop .dot{position:relative;margin-top:16px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--ink);z-index:1}
+.stop.cat-trek .dot{border-color:var(--laurel);background:var(--laurel)}
+.stop.cat-view .dot{border-color:var(--ocean)}
+.stop.cat-base .dot{border-color:var(--muted);border-radius:3px}
+.stop.is-next .dot{box-shadow:0 0 0 5px var(--strelitzia-soft);border-color:var(--strelitzia)}
+.card{margin:6px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:8px;min-width:0}
+.stop.is-next .card{border-color:var(--strelitzia);box-shadow:var(--shadow)}
+.stop.is-done .card{opacity:.55}
+.stop.is-alt .card{border-style:dashed;background:transparent}
+.card-top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.card h4{margin:0;font:700 16.5px/1.3 var(--f-body)}
+.card p{margin:0;color:var(--muted);font-size:14.5px;max-width:65ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;font:500 12px/1 var(--f-mono);padding:5px 8px;border-radius:999px;background:var(--surface-2);color:var(--muted);text-decoration:none;white-space:nowrap}
+.chip.trek{background:var(--laurel-soft);color:var(--laurel)}
+.chip.view{background:var(--ocean-soft);color:var(--ocean)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.stop{background:var(--stop-soft);color:var(--stop)}
+.chip.hot{background:var(--strelitzia-soft);color:var(--strelitzia)}
+a.chip:hover{filter:brightness(.96);text-decoration:underline}
+.chip svg{width:13px;height:13px}
+.prmark{display:inline-grid;grid-template-rows:1fr 1fr;width:14px;height:9px;border-radius:1px;overflow:hidden}
+.prmark i:first-child{background:var(--pr-y)} .prmark i:last-child{background:var(--pr-r)}
+.check{flex:none;appearance:none;width:24px;height:24px;border-radius:7px;border:2px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-content:center;margin:0}
+.check:checked{background:var(--laurel);border-color:var(--laurel)}
+.check:checked::after{content:"";width:10px;height:6px;border-left:2.5px solid var(--surface);border-bottom:2.5px solid var(--surface);transform:rotate(-45deg) translate(1px,-1px)}
+.next-flag{font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--strelitzia)}
+@media (max-width:520px){.stop{grid-template-columns:52px 16px minmax(0,1fr);gap:0 8px}.stop .time{font-size:12px}.stop .time b{font-size:13.5px}}
+
+/* WEATHER */
+.wx-mini{display:grid;gap:10px}
+.wx-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.wx-row:last-child{border-bottom:0;padding-bottom:0}
+.wx-row .nm{font-weight:700;font-size:14.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.wx-row .nm small{font:400 11.5px var(--f-mono);color:var(--muted)}
+.wx-row .now{display:flex;align-items:center;gap:6px;font:500 20px var(--f-mono)}
+.wx-row .det{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 14px;font:400 12.5px var(--f-mono);color:var(--muted)}
+.wi{width:28px;height:28px;flex:none}
+.wi .sun{fill:var(--gold);stroke:var(--gold)} .wi .cloud{fill:var(--surface-2);stroke:var(--muted)} .wi .rain{stroke:var(--ocean)} .wi .moon{fill:var(--twilight);stroke:var(--twilight)} .wi .bolt{fill:var(--strelitzia);stroke:var(--strelitzia)} .wi .fog{stroke:var(--muted)}
+.wx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.wx-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0}
+.wx-card.relevant{border-color:var(--ocean)}
+.wx-card header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.wx-card h3{font-size:19px}
+.wx-card .tag{font:400 12px var(--f-mono);color:var(--muted)}
+.wx-now{display:flex;align-items:center;gap:12px}
+.wx-now .wi{width:52px;height:52px}
+.wx-now .t{font:800 44px/1 var(--f-display);letter-spacing:-.03em}
+.wx-now .d{font-size:14px;color:var(--muted);line-height:1.35}
+.wx-now .d b{color:var(--ink)}
+.wx-days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.wx-day{background:var(--surface-2);border-radius:10px;padding:8px 6px;display:grid;justify-items:center;gap:2px;text-align:center}
+.wx-day .wd{font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.wx-day .wi{width:26px;height:26px}
+.wx-day .tt{font:500 13px var(--f-mono)}
+.wx-day .tt span{color:var(--muted)}
+.wx-day .pp{font:400 11px var(--f-mono);color:var(--ocean)}
+.wx-day.trip{outline:2px solid var(--strelitzia);outline-offset:-2px}
+.wx-src{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--muted)}
+.wx-src .live{display:inline-flex;align-items:center;gap:6px}
+.wx-src .live i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.wx-src .live.on i{background:var(--laurel);box-shadow:0 0 0 4px var(--laurel-soft)}
+
+/* WEATHER DETAIL + CHARTS */
+.wx-pick{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.wx-pick::-webkit-scrollbar{display:none}
+.wx-chip{flex:none;font:600 13.5px/1 var(--f-body);padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.wx-chip small{color:var(--laurel);font-size:10px}
+.wx-chip.rel{border-color:var(--ocean)}
+.wx-chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.wx-chip.on small{color:inherit}
+.wx-detail{gap:16px;padding:18px;scroll-margin-top:70px}
+.wx-detail-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-start}
+.wx-detail .tag{font:400 12.5px var(--f-mono);color:var(--muted);margin-top:2px}
+.wx-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px 28px;align-items:center}
+@media (max-width:640px){.wx-hero{grid-template-columns:minmax(0,1fr)}}
+.wx-hero-main{display:flex;align-items:center;gap:14px}
+.wx-hero-main .wi{width:64px;height:64px}
+.wx-hero-main .t{font:800 64px/0.9 var(--f-display);letter-spacing:-.04em}
+.wx-hero-main .d{font-size:14px;color:var(--muted);margin-top:6px}
+.wx-hero-main .d b{color:var(--ink)}
+.wx-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:0}
+.wx-stats div{background:var(--surface-2);border-radius:10px;padding:8px 10px;display:grid;gap:2px}
+.wx-stats dt{font:400 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wx-stats dd{margin:0;font:500 20px var(--f-mono);display:flex;align-items:center;gap:6px}
+.wx-stats dd small{font-size:12px;color:var(--muted)}
+.wx-stats dd.warn{color:var(--warn)} .wx-stats dd.stop{color:var(--stop)}
+.warrow path{fill:var(--ink)} .warrow.warn path{fill:var(--warn)} .warrow.stop path{fill:var(--stop)}
+.chart{position:relative;min-height:60px;min-width:0;max-width:100%}
+.panel>*,.wx-row>*{min-width:0}
+.chart .c-scroll{overflow-x:auto;position:relative;-webkit-overflow-scrolling:touch}
+.chart svg{display:block;touch-action:pan-x pan-y}
+.c-night{fill:var(--surface-2)}
+.c-mid{stroke:var(--line);stroke-width:1}
+.c-day{fill:var(--ink);font:600 12px var(--f-body)}
+.c-grid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+.c-yl,.c-xl{fill:var(--muted);font:400 10.5px var(--f-mono)}
+.c-title{fill:var(--ink);font:700 12.5px var(--f-body)}
+.c-sub{fill:var(--muted);font-weight:400}
+.c-tarea{fill:var(--strelitzia);opacity:.13}
+.c-tline{fill:none;stroke:var(--strelitzia);stroke-width:2;stroke-linejoin:round}
+.c-tdot{fill:var(--strelitzia);stroke:var(--surface);stroke-width:2}
+.c-val{fill:var(--ink);font:500 11px var(--f-mono)}
+.c-rain{fill:var(--ocean)}
+.c-empty{fill:var(--muted);font:400 12px var(--f-mono)}
+.c-wind{fill:none;stroke:var(--laurel);stroke-width:2;stroke-linejoin:round}
+.c-gust{fill:none;stroke:var(--laurel);stroke-width:1.5;stroke-dasharray:4 3;opacity:.7}
+.c-thr{stroke:var(--warn);stroke-width:1;stroke-dasharray:6 4}
+.c-thr-l{fill:var(--warn);font:500 10.5px var(--f-mono)}
+.c-arr path{fill:var(--muted)} .c-arr.warn path{fill:var(--warn)} .c-arr.stop path{fill:var(--stop)}
+.c-cross{stroke:var(--ink);stroke-width:1;opacity:.5}
+.c-hit{fill:transparent;cursor:crosshair}
+.c-tip{position:absolute;top:24px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;display:grid;gap:4px;font-size:13px;min-width:210px;pointer-events:none}
+.c-tip .tt-h{font:500 12px var(--f-mono);color:var(--muted)}
+.c-tip .tt-r{display:flex;align-items:center;gap:6px}
+.c-tip .tt-r b{font:700 20px var(--f-mono)}
+.c-tip .tt-r span{color:var(--muted)}
+.c-tip .tt-l{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.c-tip .tt-l b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.c-tip .wi{width:24px;height:24px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;flex:none}
+.sw.temp{background:var(--strelitzia)} .sw.rain{background:var(--ocean)} .sw.wind{background:var(--laurel)} .sw.cloud{background:var(--muted)}
+.sw.gust{background:none;border-top:2px dashed var(--laurel);height:0;width:14px;border-radius:0}
+.sw.night{background:var(--surface-2);border:1px solid var(--line)}
+.c-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.c-legend span{display:inline-flex;align-items:center;gap:6px}
+.chart.mini{grid-column:1/-1;margin-top:4px}
+.wx-day .gg{font:400 11px var(--f-mono);color:var(--muted);display:inline-flex;align-items:center;gap:3px}
+.wx-day .gg.warn{color:var(--warn)} .wx-day .gg.stop{color:var(--stop)}
+.cmp-list{display:grid;gap:6px}
+.cmp{display:grid;grid-template-columns:minmax(0,1.4fr) auto 90px minmax(0,1fr);gap:12px;align-items:center;text-align:left;font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:8px 12px;cursor:pointer}
+.cmp:hover{border-color:var(--line)}
+.cmp.on{border-color:var(--ink)}
+.cmp.rel .cmp-n small{color:var(--ocean)}
+.cmp-n{display:grid;min-width:0}
+.cmp-n b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp-n small{font:400 11.5px var(--f-mono);color:var(--muted)}
+.cmp-now{display:flex;align-items:center;gap:4px}
+.cmp-now b{font-size:18px;font-weight:500}
+.cmp-now .wi{width:26px;height:26px}
+.cmp-m{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:12.5px;color:var(--muted);justify-content:flex-end}
+.cmp-m .warn{color:var(--warn)} .cmp-m .stop{color:var(--stop)}
+.spark polyline{fill:none;stroke:var(--strelitzia);stroke-width:1.6}
+.spark circle{fill:var(--strelitzia)}
+@media (max-width:560px){.cmp{grid-template-columns:minmax(0,1fr) auto;}.cmp-sp{display:none}.cmp-m{grid-column:1/-1;justify-content:flex-start}}
+
+/* CAMS */
+.cam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.cam{display:grid;gap:6px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;position:relative;overflow:hidden;min-width:0}
+.cam:hover{border-color:var(--ocean)}
+.cam .lens{display:flex;align-items:center;justify-content:space-between}
+.cam .rec{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--f-mono);letter-spacing:.1em;color:var(--stop)}
+.cam .rec i{width:7px;height:7px;border-radius:50%;background:var(--stop);animation:blink 2s infinite}
+.cam .alt{font:400 12px var(--f-mono);color:var(--muted)}
+.cam b{font-size:16px}
+.cam span.why{font-size:13.5px;color:var(--muted)}
+.cam .go{font:600 13px var(--f-body);color:var(--ocean)}
+.cam.mtn{background:linear-gradient(160deg,var(--surface) 55%,var(--laurel-soft))}
+@keyframes blink{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.cam .rec i{animation:none}}
+.cam-list{display:grid;gap:8px}
+.cam-list a{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface-2);text-decoration:none;color:var(--ink);font-size:14.5px}
+.cam-list a:hover{color:var(--ocean)}
+.cam-list a small{font:400 12px var(--f-mono);color:var(--muted)}
+
+/* FOOD */
+.food{display:grid;gap:10px}
+.food a.f{display:grid;gap:3px;text-decoration:none;color:var(--ink);padding:10px 12px;border-radius:10px;background:var(--surface-2)}
+.food a.f:hover b{color:var(--ocean);text-decoration:underline}
+.food a.f b{font-size:15px}
+.food a.f span{font-size:13.5px;color:var(--muted)}
+.food a.f small{font:400 12px var(--f-mono);color:var(--strelitzia)}
+
+/* TRAILS */
+.trail{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 20px;padding:18px;align-items:start}
+.trail .code{display:inline-flex;align-items:center;gap:8px;font:700 13px var(--f-mono);letter-spacing:.06em}
+.trail .code .prmark{width:22px;height:14px}
+.trail h3{font-size:22px;margin-top:4px}
+.trail .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.trail .facts div{display:grid;gap:2px}
+.trail .facts dt{font:400 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.trail .facts dd{margin:0;font-weight:700}
+.trail p{margin:10px 0 0;color:var(--muted);font-size:14.5px;max-width:70ch}
+.trail .act{display:grid;gap:8px;justify-items:end}
+.trail .slot{font:500 13px var(--f-mono);background:var(--laurel-soft);color:var(--laurel);padding:6px 10px;border-radius:8px}
+@media (max-width:640px){.trail{grid-template-columns:minmax(0,1fr)}.trail .act{justify-items:start}}
+.bookbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--ink);color:var(--bg);border-radius:var(--r);padding:16px 18px}
+.bookbar b{font-family:var(--f-display);font-size:20px}
+.bookbar .btn{border-color:transparent}
+.steps{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--muted);font-size:14.5px}
+.steps b{color:var(--ink)}
+
+/* SUN TABLE */
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
+td.mono{font-size:14px}
+tr.cur td{background:var(--strelitzia-soft)}
+tr:last-child td{border-bottom:0}
+
+.note{font-size:13.5px;color:var(--muted);max-width:75ch}
+.sec-head{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-end;justify-content:space-between}
+.sec-head h2{font-size:clamp(26px,3.6vw,38px);font-weight:800}
+.sec-head p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+footer{color:var(--muted);font-size:13px;padding-block:8px 30px}
+
+@media (max-width:720px){
+  .tabs{position:fixed;top:auto;bottom:0;left:0;right:0;border-bottom:0;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .tabs .wrap{justify-content:space-between;padding-block:6px}
+  .tab{flex-direction:column;gap:4px;font-size:11px;padding:8px 8px;border-radius:12px;flex:1}
+  .tab svg{width:20px;height:20px}
+  .hero .wrap{padding-block:22px 20px}
+}
+</style>
+
+<header class="hero">
+  <canvas id="contours" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="brand"><span class="pr" aria-hidden="true"><i></i><i></i></span>Dingusie w Podróży</div>
+    <div class="hero-row">
+      <h1>Madera<br><span>2026</span></h1>
+      <div class="status" id="status" aria-live="polite"></div>
+    </div>
+    <div class="hero-meta">
+      <span><b>10–15 listopada</b> · 6 dni, 5 nocy</span>
+      <span>KTW ⇄ FNC · <b>11:25</b> / <b>11:25</b></span>
+      <span>Noclegi: <b>Porto Moniz → Funchal → Machico</b></span>
+      <span>Szlaki PR: <b>4</b> rezerwacje SIMplifica</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sekcje">
+  <div class="wrap" role="tablist">
+    <button class="tab" role="tab" data-tab="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="19" cy="17" r="3"/></svg>Plan dnia</button>
+    <button class="tab" role="tab" data-tab="pogoda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.2 11 3.5 3.5 0 0 0 7 18z"/></svg>Pogoda</button>
+    <button class="tab" role="tab" data-tab="kamery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg>Kamery</button>
+    <button class="tab" role="tab" data-tab="szlaki"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20l6-12 4 7 3-4 5 9z"/></svg>Szlaki</button>
+    <button class="tab" role="tab" data-tab="slonce"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 7V4M5.6 10.6 3.5 8.5M18.4 10.6l2.1-2.1"/></svg>Słońce</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section data-view="plan" id="view-plan"></section>
+  <section data-view="pogoda" id="view-pogoda" hidden></section>
+  <section data-view="kamery" id="view-kamery" hidden></section>
+  <section data-view="szlaki" id="view-szlaki" hidden></section>
+  <section data-view="slonce" id="view-slonce" hidden></section>
+  <footer>Plan z mapy „Madera 2026” (Google My Maps). Pogoda: Open-Meteo. Kamery: NetMadeira. Rezerwacje: SIMplifica / IFCN. Godziny restauracji i status szlaków sprawdzaj na miejscu.</footer>
+</main>
+
+<script>
+const TZ = "Atlantic/Madeira";
+const FUNCHAL = {lat:32.6503, lon:-16.9085};
+
+const REGIONS = /*REGIONS-START*/[
+{"id":"portomoniz","name":"Porto Moniz","lat":32.866,"lon":-17.169,"elev":20,"coast":true,"note":"baseny, nocleg 10.11"},
+{"id":"fanal","name":"Fanal / Paul da Serra","lat":32.81,"lon":-17.145,"elev":1150,"mtn":true,"note":"las laurowy"},
+{"id":"seixal","name":"Seixal / São Vicente","lat":32.823,"lon":-17.105,"elev":20,"coast":true,"note":"czarna plaża, północ"},
+{"id":"santana","name":"Santana","lat":32.806,"lon":-16.882,"elev":430,"note":"domki, północny wschód"},
+{"id":"ruivo","name":"Pico Ruivo","lat":32.759,"lon":-16.943,"elev":1800,"mtn":true,"note":"PR1.2, zachód słońca"},
+{"id":"areeiro","name":"Pico do Areeiro","lat":32.735,"lon":-16.928,"elev":1810,"mtn":true,"note":"wschód słońca, PR1"},
+{"id":"rabacal","name":"Rabaçal / 25 Fontes","lat":32.755,"lon":-17.133,"elev":1050,"mtn":true,"note":"PR6"},
+{"id":"pontadosol","name":"Ponta do Sol","lat":32.68,"lon":-17.1,"elev":20,"coast":true,"note":"południe, najwięcej słońca"},
+{"id":"funchal","name":"Funchal","lat":32.65,"lon":-16.91,"elev":40,"coast":true,"note":"nocleg 11–12.11"},
+{"id":"machico","name":"Machico","lat":32.718,"lon":-16.766,"elev":20,"coast":true,"note":"nocleg 13–14.11"},
+{"id":"saolourenco","name":"Ponta de São Lourenço","lat":32.743,"lon":-16.71,"elev":100,"coast":true,"note":"PR8, wietrznie"}
+]/*REGIONS-END*/;
+
+let SNAPSHOT = /*SNAPSHOT-START*/{"fetched":"2026-10-19T22:29+00:00","wx":{"portomoniz":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":19.9,"apparent_temperature":20.1,"weather_code":3,"wind_speed_10m":9.2,"wind_gusts_10m":17.6,"wind_direction_10m":69,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":72,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[20.0,20.2,20.4,20.4,20.1,20.2,20.1,19.8,19.6,19.5,20.0,20.3,20.5,20.7,21.2,21.4,21.4,21.2,20.9,20.7,20.3,20.2,20.0,19.9,19.7,19.7,19.7,19.8,19.8,19.7,19.6,19.6,19.6,19.8,21.0,21.8,22.2,22.4,22.4,21.9,21.0,20.8,20.8,20.6,20.5,20.4,20.4,20.3,20.2,20.1,20.1,20.1,20.1,20.3,19.8,19.5,19.6,19.8,21.1,21.8,22.2,22.6,22.6,21.9,22.2,22.2,22.2,21.7,21.2,21.0,20.9,20.9,20.9,20.9,20.7,20.6,20.5,20.2,20.2,20.2,20.2,20.6,21.8,22.3,22.9,23.4,23.3,23.4,23.2,23.3,22.7,22.2,21.7,21.4,21.1,20.9],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,5,3,3,3,5,13,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,3,3,3,3,3,3,1,0,0,0,1,1,2],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,1,2,2,2,3,3,3,3,3,2,2,2,2,2,2,2,2,1,2,3,3,3,2,3,1,2,2,2,3,3,3,2,1,1,1,1,1,3,3,3,1,2,1,1,1,2,2,3,3,3,1,1,3,3,3,3,2,2,2,2,2,2],"wind_speed_10m":[20.6,21.2,19.3,18.9,16.2,14.8,12.3,16.4,14.1,12.6,14.6,15.0,15.0,14.1,14.8,15.6,16.2,15.2,13.6,13.8,13.3,11.9,10.7,9.4,8.1,7.6,8.5,8.4,8.9,8.6,8.7,9.3,8.4,9.1,8.9,9.4,10.4,11.8,12.8,13.6,14.0,14.8,15.0,13.5,11.8,10.9,10.7,11.3,11.8,12.4,12.9,13.3,13.3,13.7,15.2,14.4,14.4,14.8,15.6,15.9,16.4,17.7,17.4,14.8,14.2,13.0,13.9,15.5,14.0,13.0,12.8,12.0,11.7,12.0,11.2,9.4,8.6,9.4,9.7,10.1,10.8,10.8,7.6,7.1,8.1,9.6,11.2,11.5,9.2,10.0,12.5,13.5,13.4,13.4,13.2,12.8],"wind_gusts_10m":[56.5,55.8,56.9,52.9,50.4,45.0,41.4,35.3,37.8,35.3,32.8,32.0,32.0,31.7,31.0,32.4,32.4,33.1,31.0,27.0,26.6,25.9,23.4,20.9,17.6,15.1,15.8,15.8,16.9,17.3,16.6,17.3,17.3,17.3,18.7,19.8,22.0,25.2,27.4,28.4,28.8,30.2,30.2,29.9,26.6,23.0,21.2,21.6,23.8,25.6,29.2,34.6,37.1,39.6,38.9,38.5,36.7,36.0,36.0,38.9,39.6,38.2,37.8,35.3,30.2,29.5,28.1,30.6,30.2,27.4,25.6,24.5,23.0,23.0,22.7,21.2,18.0,17.6,18.4,19.1,20.5,21.6,20.5,15.1,17.6,20.9,24.5,25.6,24.8,20.9,25.9,27.0,27.0,27.0,26.6,27.4],"wind_direction_10m":[47,55,53,50,53,56,52,52,58,59,52,48,48,52,39,34,32,36,40,47,52,55,57,67,77,71,62,65,63,68,66,77,83,72,58,47,34,27,32,37,42,49,55,61,70,73,76,73,70,73,72,71,71,72,68,77,77,77,67,65,61,57,56,61,63,62,59,65,72,76,80,83,79,83,90,94,88,88,86,86,86,90,85,60,45,34,40,46,51,49,44,46,59,66,73,74],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,97,94,100,100,100,100,100,100,98,100,100,100,100,100,100,100,100,96,100,85,80,78,50,34,58,71,58,87,100,100,100,90,75,58,63,68,54,65,54,47,38,50,88,94,98,52,96,38,75,53,50,84,100,87,65,41,37,42,34,35,93,100,100,12,46,26,20,30,47,79,98,100,100,11,16,100,100,95,87,78,75,58,58,56,49],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,3,3,3],"temperature_2m_max":[21.4,22.4,22.6,23.4],"temperature_2m_min":[19.4,19.5,19.5,20.1],"precipitation_probability_max":[13,3,3,3],"precipitation_sum":[0.0,0.0,0.0,0.0],"wind_gusts_10m_max":[56.9,30.2,39.6,27.4],"wind_direction_10m_dominant":[49,58,68,68]}},"fanal":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":10.3,"apparent_temperature":9.4,"weather_code":3,"wind_speed_10m":4.3,"wind_gusts_10m":10.1,"wind_direction_10m":66,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":93,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[11.1,11.3,11.4,11.5,11.1,11.2,11.3,11.2,11.1,11.2,12.1,12.6,13.2,13.4,13.6,13.7,13.5,12.7,12.2,11.8,11.0,11.0,10.6,10.3,10.4,10.5,10.4,10.4,10.4,10.2,10.2,10.2,10.2,10.6,12.5,13.5,14.3,14.7,14.5,13.6,12.9,12.4,12.3,12.0,11.7,11.4,11.2,11.0,10.9,11.0,11.1,11.0,10.9,11.1,10.9,11.1,11.2,11.6,12.8,13.3,13.8,14.2,14.1,13.7,13.9,13.8,13.5,12.7,11.9,11.6,11.3,11.3,11.5,11.5,11.3,11.1,11.0,10.8,10.8,10.9,11.0,11.3,13.2,14.0,15.6,16.5,16.2,16.1,15.9,15.4,14.7,13.7,12.8,12.5,12.4,12.3],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.3,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.3,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,3,3,3,3,3,3,53,53,2,3,3,3,2,3,2,3,2,2,2,3,3,2,3,2,2,2,3,3,80,3,3,3,3,2,2,3,3,3,3,2,2,1,0,1,2,2,2,3,3,3,2,2,3,3,2,3,3,3,2,2,2],"wind_speed_10m":[14.9,14.3,12.8,12.0,11.8,11.0,9.2,10.8,8.9,7.4,9.2,8.7,8.4,7.4,8.0,9.2,10.5,9.2,7.9,7.3,6.5,6.6,5.9,4.5,4.0,3.5,4.0,3.4,4.0,3.6,4.0,4.7,4.1,4.6,4.6,4.8,4.6,4.7,4.9,5.2,6.8,8.5,8.2,7.4,6.6,6.7,6.2,6.8,7.3,7.3,7.6,7.6,8.0,8.2,8.5,8.0,8.1,9.0,10.0,10.4,11.2,11.5,11.5,10.5,9.7,9.4,9.7,9.7,9.4,9.0,7.7,7.4,7.1,7.1,6.3,5.7,5.2,5.4,5.7,5.2,5.8,5.4,3.2,4.0,4.5,3.5,5.0,3.9,3.1,5.6,8.2,8.4,8.5,8.7,8.3,8.1],"wind_gusts_10m":[67.0,59.0,50.4,47.9,42.8,43.2,42.5,34.6,33.5,31.7,27.0,28.4,28.4,24.5,24.1,24.8,25.6,25.9,24.1,20.5,16.9,15.5,15.5,13.3,10.1,7.9,8.3,9.0,9.7,9.7,7.6,10.1,10.1,9.7,12.2,14.0,14.8,14.8,14.8,14.8,18.0,22.3,22.3,21.2,18.0,17.6,17.3,18.0,19.4,19.8,20.5,20.9,22.7,27.4,29.9,29.2,26.6,24.8,26.3,27.4,29.2,30.6,31.0,30.2,27.0,25.6,25.2,24.8,23.8,22.3,20.9,17.6,17.3,17.6,16.2,14.0,13.3,12.2,17.3,18.0,19.8,20.9,20.9,22.7,23.0,21.2,18.0,18.4,17.3,15.8,22.0,22.0,21.6,20.5,20.5,19.8],"wind_direction_10m":[32,39,40,41,40,38,42,37,40,47,39,38,40,39,27,21,16,26,30,33,34,41,43,61,80,66,63,72,63,84,63,67,75,72,45,42,39,32,36,34,32,36,41,43,49,54,54,58,57,57,59,59,63,67,62,63,58,53,49,46,45,46,41,41,42,47,48,48,50,53,62,67,60,66,66,72,78,70,72,74,68,86,63,27,29,24,21,34,45,27,41,47,54,52,56,58],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,99,100,100,100,97,100,100,97,100,99,100,100,100,100,100,94,84,81,77,77,45,59,47,87,100,100,100,100,100,100,100,79,96,87,86,65,82,72,85,81,78,77,100,97,70,99,53,69,75,94,91,100,100,97,86,82,65,52,87,100,100,100,68,59,10,6,22,45,48,48,100,100,93,76,76,100,86,75,83,89,98,64,71,70],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,53,80,3],"temperature_2m_max":[13.7,14.7,14.2,16.6],"temperature_2m_min":[10.3,10.2,10.9,10.8],"precipitation_probability_max":[0,0,0,0],"precipitation_sum":[0.0,0.6,0.7,0.0],"wind_gusts_10m_max":[67.0,22.3,31.0,23.0],"wind_direction_10m_dominant":[36,52,52,55]}},"seixal":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":19.9,"apparent_temperature":20.1,"weather_code":3,"wind_speed_10m":9.2,"wind_gusts_10m":17.6,"wind_direction_10m":69,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":72,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[20.0,20.2,20.4,20.4,20.1,20.2,20.1,19.8,19.6,19.5,20.0,20.3,20.5,20.7,21.2,21.4,21.4,21.2,20.9,20.7,20.3,20.2,20.0,19.9,19.7,19.7,19.7,19.8,19.8,19.7,19.6,19.6,19.6,19.8,21.0,21.8,22.2,22.4,22.4,21.9,21.0,20.8,20.8,20.6,20.5,20.4,20.4,20.3,20.2,20.1,20.1,20.1,20.1,20.3,19.8,19.5,19.6,19.8,21.1,21.8,22.2,22.6,22.6,21.9,22.2,22.2,22.2,21.7,21.2,21.0,20.9,20.9,20.9,20.9,20.7,20.6,20.5,20.2,20.2,20.2,20.2,20.6,21.8,22.3,22.9,23.4,23.3,23.4,23.2,23.3,22.7,22.2,21.7,21.4,21.1,20.9],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,5,3,3,3,5,13,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,0,0,0,0,0,0,3,3,3,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,3,3,3,3,3,3,1,0,0,0,1,1,2],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,1,2,2,2,3,3,3,3,3,2,2,2,2,2,2,2,2,1,2,3,3,3,2,3,1,2,2,2,3,3,3,2,1,1,1,1,1,3,3,3,1,2,1,1,1,2,2,3,3,3,1,1,3,3,3,3,2,2,2,2,2,2],"wind_speed_10m":[20.6,21.2,19.3,18.9,16.2,14.8,12.3,16.4,14.1,12.6,14.6,15.0,15.0,14.1,14.8,15.6,16.2,15.2,13.6,13.8,13.3,11.9,10.7,9.4,8.1,7.6,8.5,8.4,8.9,8.6,8.7,9.3,8.4,9.1,8.9,9.4,10.4,11.8,12.8,13.6,14.0,14.8,15.0,13.5,11.8,10.9,10.7,11.3,11.8,12.4,12.9,13.3,13.3,13.7,15.2,14.4,14.4,14.8,15.6,15.9,16.4,17.7,17.4,14.8,14.2,13.0,13.9,15.5,14.0,13.0,12.8,12.0,11.7,12.0,11.2,9.4,8.6,9.4,9.7,10.1,10.8,10.8,7.6,7.1,8.1,9.6,11.2,11.5,9.2,10.0,12.5,13.5,13.4,13.4,13.2,12.8],"wind_gusts_10m":[56.5,55.8,56.9,52.9,50.4,45.0,41.4,35.3,37.8,35.3,32.8,32.0,32.0,31.7,31.0,32.4,32.4,33.1,31.0,27.0,26.6,25.9,23.4,20.9,17.6,15.1,15.8,15.8,16.9,17.3,16.6,17.3,17.3,17.3,18.7,19.8,22.0,25.2,27.4,28.4,28.8,30.2,30.2,29.9,26.6,23.0,21.2,21.6,23.8,25.6,29.2,34.6,37.1,39.6,38.9,38.5,36.7,36.0,36.0,38.9,39.6,38.2,37.8,35.3,30.2,29.5,28.1,30.6,30.2,27.4,25.6,24.5,23.0,23.0,22.7,21.2,18.0,17.6,18.4,19.1,20.5,21.6,20.5,15.1,17.6,20.9,24.5,25.6,24.8,20.9,25.9,27.0,27.0,27.0,26.6,27.4],"wind_direction_10m":[47,55,53,50,53,56,52,52,58,59,52,48,48,52,39,34,32,36,40,47,52,55,57,67,77,71,62,65,63,68,66,77,83,72,58,47,34,27,32,37,42,49,55,61,70,73,76,73,70,73,72,71,71,72,68,77,77,77,67,65,61,57,56,61,63,62,59,65,72,76,80,83,79,83,90,94,88,88,86,86,86,90,85,60,45,34,40,46,51,49,44,46,59,66,73,74],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,97,94,100,100,100,100,100,100,98,100,100,100,100,100,100,100,100,96,100,85,80,78,50,34,58,71,58,87,100,100,100,90,75,58,63,68,54,65,54,47,38,50,88,94,98,52,96,38,75,53,50,84,100,87,65,41,37,42,34,35,93,100,100,12,46,26,20,30,47,79,98,100,100,11,16,100,100,95,87,78,75,58,58,56,49],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,3,3,3],"temperature_2m_max":[21.4,22.4,22.6,23.4],"temperature_2m_min":[19.4,19.5,19.5,20.1],"precipitation_probability_max":[13,3,3,3],"precipitation_sum":[0.0,0.0,0.0,0.0],"wind_gusts_10m_max":[56.9,30.2,39.6,27.4],"wind_direction_10m_dominant":[49,58,68,68]}},"santana":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":15.8,"apparent_temperature":15.7,"weather_code":3,"wind_speed_10m":6.7,"wind_gusts_10m":12.6,"wind_direction_10m":216,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":81,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[16.8,16.8,16.3,16.9,16.7,16.5,16.5,16.2,16.1,16.1,16.7,16.7,17.3,17.6,18.4,18.8,18.5,18.4,18.2,17.6,17.0,16.9,16.4,15.8,16.0,16.1,16.1,15.7,15.6,15.7,15.8,16.0,16.1,16.3,17.8,18.7,19.4,19.8,19.5,18.8,18.3,17.9,17.7,17.3,16.9,16.8,16.8,16.9,16.8,16.7,16.9,16.7,16.6,16.8,16.2,16.1,16.0,16.4,17.3,18.2,18.4,18.9,19.1,19.0,19.2,19.1,18.8,18.3,17.8,17.5,17.6,17.7,17.7,17.7,17.5,17.4,17.3,17.2,17.0,16.8,16.5,16.8,18.0,19.1,20.0,20.4,20.2,20.1,20.5,20.2,19.7,19.1,18.5,17.9,17.6,17.3],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.2,0.0,0.0,0.0,0.0,0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.3,0.2],"precipitation_probability":[0,0,0,0,0,0,0,0,5,3,3,0,0,0,3,0,0,8,13,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,3,10,5,5,0,0,0,5,5,8,10,18,10,5,3,10,8,8,8,23,33,20,10,8,0,3,1,0,0,1,2,3,2,1,0,0,0,0,1,2,3,3,3,3,3,4,5,11,12,13,12,11,8,6],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,1,1,1,2,3,2,3,3,61,3,3,2,2,2,2,2,2,2,2,2,3,3,2,3,3,2,2,2,2,2,2,2,2,1,2,2,2,3,3,3,3,3,2,2,3,2,2,2,1,3,1,0,3,3,3,3,2,2,3,2,2,80,2],"wind_speed_10m":[7.9,4.0,3.8,3.6,3.6,4.2,2.9,3.6,3.1,3.4,6.8,7.6,6.1,8.7,9.7,10.1,10.9,9.5,8.2,7.8,5.4,3.2,4.2,6.4,6.3,4.6,4.6,5.7,6.2,6.0,5.5,5.5,6.6,6.2,1.6,4.2,7.7,10.2,12.1,11.8,10.7,9.0,7.9,6.1,4.3,4.5,4.6,4.7,4.1,4.0,3.0,2.5,2.5,5.2,5.8,6.8,7.9,6.9,7.3,11.4,11.1,12.7,12.5,12.9,12.2,12.0,11.3,11.2,9.4,8.4,8.3,8.2,8.2,8.8,9.3,8.7,7.6,7.7,6.6,5.4,5.1,6.5,5.4,7.2,8.0,10.2,11.6,10.2,9.7,10.7,8.9,8.2,7.7,6.9,7.0,6.2],"wind_gusts_10m":[19.8,18.4,13.3,9.7,10.1,10.1,10.1,7.9,9.4,9.4,13.0,17.3,17.3,18.0,21.6,22.7,23.0,24.1,21.2,18.0,15.5,11.2,9.4,12.2,12.6,11.9,8.3,11.2,12.2,12.6,11.5,10.4,12.6,12.6,11.9,11.2,17.3,22.3,26.3,26.3,25.6,22.7,19.1,16.9,13.0,10.4,10.4,10.1,9.7,9.0,8.6,7.2,6.5,9.7,14.0,16.2,18.4,18.4,18.4,25.2,25.9,28.1,28.1,28.8,28.1,26.3,25.9,24.8,23.8,20.2,18.0,17.6,18.7,19.8,20.2,20.2,18.4,16.9,15.8,14.0,10.4,11.9,12.2,15.8,18.4,23.0,25.6,25.6,22.3,23.8,23.4,19.1,16.9,15.8,15.8,15.8],"wind_direction_10m":[336,270,253,307,307,290,270,354,315,288,357,5,360,7,2,356,351,349,345,347,340,297,250,218,211,219,225,215,216,205,203,203,202,201,207,31,28,23,27,31,33,37,43,62,114,151,141,113,105,95,104,90,98,74,94,115,129,137,99,72,77,75,72,72,76,81,83,84,94,100,108,105,105,109,118,120,121,118,131,138,141,161,132,87,63,51,54,58,63,57,58,52,62,96,102,111],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,100,100,99,100,100,93,100,99,92,100,100,100,100,100,100,46,45,75,49,45,44,29,37,34,50,88,80,100,100,100,96,92,72,81,75,58,77,72,60,58,64,86,100,73,83,98,64,65,68,76,72,79,60,59,43,63,62,59,100,100,100,97,90,68,55,85,80,59,59,32,82,20,0,100,95,100,88,77,54,92,62,72,82,71],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,61,3,80],"temperature_2m_max":[18.8,19.8,19.2,20.5],"temperature_2m_min":[15.8,15.6,16.0,16.5],"precipitation_probability_max":[13,10,33,13],"precipitation_sum":[0.4,0.3,0.4,0.6],"wind_gusts_10m_max":[24.1,26.3,28.8,25.6],"wind_direction_10m_dominant":[335,83,89,91]}},"ruivo":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":6.7,"apparent_temperature":5.0,"weather_code":3,"wind_speed_10m":4.5,"wind_gusts_10m":10.1,"wind_direction_10m":346,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":91,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[6.2,6.6,6.9,6.8,6.6,6.8,6.9,6.8,6.7,6.9,7.8,8.6,9.8,9.7,10.1,10.1,9.9,9.4,8.5,7.7,6.7,6.4,6.6,6.7,6.6,6.7,6.7,6.5,6.2,6.3,6.2,5.8,5.8,6.2,8.2,9.5,10.4,10.8,10.9,10.3,9.4,8.9,8.7,8.3,7.8,7.5,7.0,6.7,6.6,6.7,6.9,6.9,6.8,6.9,6.8,6.9,7.1,7.5,8.6,9.5,10.1,10.6,10.5,10.6,10.5,10.3,9.8,8.7,7.8,7.5,7.4,7.4,7.4,7.5,7.3,7.2,6.9,6.8,6.9,6.9,6.8,7.3,9.2,10.5,11.8,12.7,13.0,12.3,12.3,11.8,10.8,9.6,8.6,8.2,8.2,8.2],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,5,3,3,0,0,0,3,0,0,8,13,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,3,10,5,5,0,0,0,5,5,8,10,18,10,5,3,10,8,8,8,23,33,20,10,8,0,3,1,0,0,1,2,3,2,1,0,0,0,0,1,2,3,3,3,3,3,4,5,11,12,13,12,11,8,6],"weather_code":[3,3,3,3,3,3,3,3,45,45,45,3,3,3,3,3,3,3,3,3,45,45,45,3,3,3,3,2,2,3,2,1,1,1,1,2,3,3,3,3,51,51,45,45,45,45,45,45,45,45,3,3,2,3,3,45,2,3,2,2,3,3,3,2,3,3,3,3,2,2,3,3,3,45,45,45,45,45,45,45,2,2,3,1,1,3,3,3,3,3,3,3,3,2,2,2],"wind_speed_10m":[11.7,12.7,11.4,10.3,10.5,10.0,8.1,8.7,7.0,5.4,6.9,5.8,5.2,4.4,4.8,5.6,6.9,5.9,5.1,5.0,5.2,5.1,5.2,4.5,4.1,3.1,3.1,2.8,3.4,2.6,3.3,4.3,4.3,3.6,3.3,2.5,2.5,2.5,2.6,2.6,4.5,5.0,5.4,5.4,5.6,5.5,5.8,6.3,6.4,7.1,7.4,7.6,8.1,7.4,7.1,7.1,7.9,8.4,8.4,8.2,8.4,8.7,9.2,8.9,7.7,7.9,7.4,7.9,8.4,7.6,7.1,7.4,7.4,6.6,6.4,6.5,5.6,5.4,4.8,4.3,4.8,3.4,1.5,2.4,3.1,1.5,0.8,0.7,0.8,3.7,5.2,5.8,6.6,7.4,7.3,7.2],"wind_gusts_10m":[59.4,56.5,49.0,47.5,42.1,42.5,42.5,36.0,30.6,28.1,24.5,23.8,21.2,16.6,14.4,16.2,18.4,18.0,17.3,14.0,13.0,13.7,12.6,12.2,10.1,8.6,9.7,9.7,11.2,10.8,6.8,8.3,11.5,11.5,9.7,9.7,10.1,10.1,10.1,10.1,12.2,14.0,14.0,14.8,14.4,15.8,14.4,15.1,16.9,18.7,19.8,19.8,22.7,26.3,26.6,26.3,24.8,24.1,23.0,23.0,22.7,23.8,24.8,24.8,23.8,21.2,20.9,20.9,20.2,19.8,17.3,17.6,17.6,16.9,16.2,14.8,14.8,12.6,13.0,13.7,15.5,15.8,16.6,18.4,17.6,14.4,9.4,9.4,9.7,11.2,14.4,15.8,16.2,16.9,16.9,17.3],"wind_direction_10m":[9,15,13,12,16,15,13,17,12,360,9,4,348,351,333,315,321,322,309,339,344,352,348,346,345,339,339,320,342,344,347,5,360,354,6,8,352,352,344,344,346,360,8,4,15,23,30,31,27,24,23,19,21,29,41,45,47,43,40,41,43,42,39,43,41,43,39,43,40,45,49,47,43,45,52,56,63,48,42,24,13,18,45,63,45,76,333,360,63,29,34,22,22,29,33,37],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,98,100,96,100,100,100,100,100,100,94,68,80,85,79,33,12,8,27,81,85,100,100,100,100,100,98,100,87,90,67,76,96,91,92,86,75,96,100,74,73,98,80,73,85,84,87,80,87,86,83,88,74,70,100,100,100,95,100,81,70,100,83,78,64,79,87,35,43,100,91,100,84,84,89,95,87,75,75,75],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[45,51,45,45],"temperature_2m_max":[10.1,10.9,10.6,13.0],"temperature_2m_min":[6.2,5.8,6.6,6.8],"precipitation_probability_max":[13,10,33,13],"precipitation_sum":[0.0,0.2,0.0,0.0],"wind_gusts_10m_max":[59.4,15.8,26.6,18.4],"wind_direction_10m_dominant":[359,0,38,38]}},"areeiro":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":6.7,"apparent_temperature":4.9,"weather_code":3,"wind_speed_10m":4.5,"wind_gusts_10m":10.1,"wind_direction_10m":346,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":91,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[6.2,6.6,6.9,6.8,6.6,6.7,6.9,6.7,6.7,6.8,7.8,8.5,9.7,9.7,10.0,10.0,9.9,9.3,8.5,7.7,6.7,6.4,6.6,6.7,6.6,6.7,6.7,6.5,6.2,6.2,6.1,5.8,5.8,6.2,8.2,9.5,10.4,10.8,10.8,10.3,9.4,8.8,8.7,8.2,7.7,7.4,6.9,6.6,6.5,6.7,6.9,6.9,6.8,6.9,6.7,6.9,7.1,7.5,8.6,9.5,10.0,10.5,10.5,10.6,10.5,10.2,9.8,8.7,7.7,7.4,7.3,7.3,7.4,7.4,7.3,7.1,6.8,6.8,6.9,6.9,6.8,7.2,9.1,10.5,11.7,12.7,12.9,12.3,12.3,11.8,10.8,9.6,8.6,8.1,8.1,8.2],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,5,3,3,0,0,0,3,0,0,8,13,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,3,3,10,5,5,0,0,0,5,5,8,10,18,10,5,3,10,8,8,8,23,33,20,10,8,0,3,1,0,0,1,2,3,2,1,0,0,0,0,1,2,3,3,3,3,3,4,5,11,12,13,12,11,8,6],"weather_code":[3,3,3,3,3,3,3,3,45,45,45,3,3,3,3,3,3,3,3,3,45,45,45,3,3,3,3,2,2,3,2,1,1,1,1,2,3,3,3,3,51,51,45,45,45,45,45,45,45,45,3,3,2,3,3,45,2,3,2,2,3,3,3,2,3,3,3,3,2,2,3,3,3,45,45,45,45,45,45,45,2,2,3,1,1,3,3,3,3,3,3,3,3,2,2,2],"wind_speed_10m":[11.7,12.7,11.4,10.3,10.5,10.0,8.1,8.7,7.0,5.4,6.9,5.8,5.2,4.4,4.8,5.6,6.9,5.9,5.1,5.0,5.2,5.1,5.2,4.5,4.1,3.1,3.1,2.8,3.4,2.6,3.3,4.3,4.3,3.6,3.3,2.5,2.5,2.5,2.6,2.6,4.5,5.0,5.4,5.4,5.6,5.5,5.8,6.3,6.4,7.1,7.4,7.6,8.1,7.4,7.1,7.1,7.9,8.4,8.4,8.2,8.4,8.7,9.2,8.9,7.7,7.9,7.4,7.9,8.4,7.6,7.1,7.4,7.4,6.6,6.4,6.5,5.6,5.4,4.8,4.3,4.8,3.4,1.5,2.4,3.1,1.5,0.8,0.7,0.8,3.7,5.2,5.8,6.6,7.4,7.3,7.2],"wind_gusts_10m":[59.4,56.5,49.0,47.5,42.1,42.5,42.5,36.0,30.6,28.1,24.5,23.8,21.2,16.6,14.4,16.2,18.4,18.0,17.3,14.0,13.0,13.7,12.6,12.2,10.1,8.6,9.7,9.7,11.2,10.8,6.8,8.3,11.5,11.5,9.7,9.7,10.1,10.1,10.1,10.1,12.2,14.0,14.0,14.8,14.4,15.8,14.4,15.1,16.9,18.7,19.8,19.8,22.7,26.3,26.6,26.3,24.8,24.1,23.0,23.0,22.7,23.8,24.8,24.8,23.8,21.2,20.9,20.9,20.2,19.8,17.3,17.6,17.6,16.9,16.2,14.8,14.8,12.6,13.0,13.7,15.5,15.8,16.6,18.4,17.6,14.4,9.4,9.4,9.7,11.2,14.4,15.8,16.2,16.9,16.9,17.3],"wind_direction_10m":[9,15,13,12,16,15,13,17,12,360,9,4,348,351,333,315,321,322,309,339,344,352,348,346,345,339,339,320,342,344,347,5,360,354,6,8,352,352,344,344,346,360,8,4,15,23,30,31,27,24,23,19,21,29,41,45,47,43,40,41,43,42,39,43,41,43,39,43,40,45,49,47,43,45,52,56,63,48,42,24,13,18,45,63,45,76,333,360,63,29,34,22,22,29,33,37],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,98,100,96,100,100,100,100,100,100,94,68,80,85,79,33,12,8,27,81,85,100,100,100,100,100,98,100,87,90,67,76,96,91,92,86,75,96,100,74,73,98,80,73,85,84,87,80,87,86,83,88,74,70,100,100,100,95,100,81,70,100,83,78,64,79,87,35,43,100,91,100,84,84,89,95,87,75,75,75],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[45,51,45,45],"temperature_2m_max":[10.1,10.9,10.6,12.9],"temperature_2m_min":[6.2,5.7,6.5,6.8],"precipitation_probability_max":[13,10,33,13],"precipitation_sum":[0.0,0.2,0.0,0.0],"wind_gusts_10m_max":[59.4,15.8,26.6,18.4],"wind_direction_10m_dominant":[359,0,38,38]}},"rabacal":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":10.9,"apparent_temperature":10.3,"weather_code":3,"wind_speed_10m":4.3,"wind_gusts_10m":10.1,"wind_direction_10m":66,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":93,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[11.8,12.0,12.0,12.1,11.8,11.8,12.0,11.8,11.8,11.8,12.8,13.2,13.8,14.0,14.3,14.4,14.2,13.4,12.9,12.4,11.7,11.6,11.3,10.9,11.0,11.1,11.0,11.1,11.0,10.9,10.8,10.8,10.9,11.2,13.1,14.2,14.9,15.3,15.1,14.3,13.5,13.1,12.9,12.7,12.3,12.0,11.8,11.7,11.6,11.6,11.7,11.7,11.6,11.8,11.6,11.7,11.8,12.2,13.4,13.9,14.4,14.8,14.7,14.3,14.6,14.4,14.2,13.4,12.5,12.3,12.0,12.0,12.2,12.1,12.0,11.7,11.6,11.5,11.5,11.6,11.6,12.0,13.8,14.7,16.2,17.2,16.9,16.7,16.6,16.0,15.3,14.3,13.5,13.2,13.0,13.0],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.3,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.3,0.1,0.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,3,3,3,3,3,3,53,53,2,3,3,3,2,3,2,3,2,2,2,3,3,2,3,2,2,2,3,3,80,3,3,3,3,2,2,3,3,3,3,2,2,1,0,1,2,2,2,3,3,3,2,2,3,3,2,3,3,3,2,2,2],"wind_speed_10m":[14.9,14.3,12.8,12.0,11.8,11.0,9.2,10.8,8.9,7.4,9.2,8.7,8.4,7.4,8.0,9.2,10.5,9.2,7.9,7.3,6.5,6.6,5.9,4.5,4.0,3.5,4.0,3.4,4.0,3.6,4.0,4.7,4.1,4.6,4.6,4.8,4.6,4.7,4.9,5.2,6.8,8.5,8.2,7.4,6.6,6.7,6.2,6.8,7.3,7.3,7.6,7.6,8.0,8.2,8.5,8.0,8.1,9.0,10.0,10.4,11.2,11.5,11.5,10.5,9.7,9.4,9.7,9.7,9.4,9.0,7.7,7.4,7.1,7.1,6.3,5.7,5.2,5.4,5.7,5.2,5.8,5.4,3.2,4.0,4.5,3.5,5.0,3.9,3.1,5.6,8.2,8.4,8.5,8.7,8.3,8.1],"wind_gusts_10m":[67.0,59.0,50.4,47.9,42.8,43.2,42.5,34.6,33.5,31.7,27.0,28.4,28.4,24.5,24.1,24.8,25.6,25.9,24.1,20.5,16.9,15.5,15.5,13.3,10.1,7.9,8.3,9.0,9.7,9.7,7.6,10.1,10.1,9.7,12.2,14.0,14.8,14.8,14.8,14.8,18.0,22.3,22.3,21.2,18.0,17.6,17.3,18.0,19.4,19.8,20.5,20.9,22.7,27.4,29.9,29.2,26.6,24.8,26.3,27.4,29.2,30.6,31.0,30.2,27.0,25.6,25.2,24.8,23.8,22.3,20.9,17.6,17.3,17.6,16.2,14.0,13.3,12.2,17.3,18.0,19.8,20.9,20.9,22.7,23.0,21.2,18.0,18.4,17.3,15.8,22.0,22.0,21.6,20.5,20.5,19.8],"wind_direction_10m":[32,39,40,41,40,38,42,37,40,47,39,38,40,39,27,21,16,26,30,33,34,41,43,61,80,66,63,72,63,84,63,67,75,72,45,42,39,32,36,34,32,36,41,43,49,54,54,58,57,57,59,59,63,67,62,63,58,53,49,46,45,46,41,41,42,47,48,48,50,53,62,67,60,66,66,72,78,70,72,74,68,86,63,27,29,24,21,34,45,27,41,47,54,52,56,58],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,99,100,100,100,97,100,100,97,100,99,100,100,100,100,100,94,84,81,77,77,45,59,47,87,100,100,100,100,100,100,100,79,96,87,86,65,82,72,85,81,78,77,100,97,70,99,53,69,75,94,91,100,100,97,86,82,65,52,87,100,100,100,68,59,10,6,22,45,48,48,100,100,93,76,76,100,86,75,83,89,98,64,71,70],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,53,80,3],"temperature_2m_max":[14.4,15.3,14.8,17.2],"temperature_2m_min":[10.9,10.8,11.6,11.5],"precipitation_probability_max":[0,0,0,0],"precipitation_sum":[0.0,0.6,0.7,0.0],"wind_gusts_10m_max":[67.0,22.3,31.0,23.0],"wind_direction_10m_dominant":[36,52,52,55]}},"pontadosol":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":20.3,"apparent_temperature":20.7,"weather_code":3,"wind_speed_10m":6.9,"wind_gusts_10m":11.9,"wind_direction_10m":28,"precipitation":0.0,"cloud_cover":100,"relative_humidity_2m":69,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[19.8,19.9,20.0,19.9,19.6,19.7,19.7,19.6,19.6,20.0,20.9,21.8,22.6,22.7,22.9,22.7,22.1,21.9,21.3,21.0,20.6,20.4,20.3,20.3,20.3,20.4,20.2,19.9,19.7,19.8,19.7,19.7,19.5,19.8,21.2,22.1,22.6,22.6,22.6,22.7,22.7,22.5,22.1,21.7,21.5,21.1,20.6,20.4,20.3,20.2,20.1,20.1,20.2,20.2,20.1,20.0,20.1,20.6,21.9,22.9,23.8,24.3,24.5,24.3,24.1,23.7,23.6,22.9,21.8,21.0,20.8,20.9,20.8,20.5,20.2,20.0,20.0,20.0,20.1,20.1,20.2,20.4,21.9,22.8,23.6,23.8,23.7,23.9,23.5,23.3,23.0,22.5,22.2,21.7,21.2,21.1],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,1,0,0,1,2,2,2,2,3,3,2,3,2,3,3,1,2,1,1,1,1,2,3,2,1,3,2,0,2,3,3,3,3,3,3,2,2,1,3,3,3,3,2,1,1,2,1,1,1,1,3,3,0,3,2,2,2,1,1,2,3,1,0,0],"wind_speed_10m":[9.2,9.7,8.7,8.0,7.6,8.4,6.6,5.9,6.4,6.1,5.1,2.2,4.8,6.5,6.8,8.0,5.7,4.7,4.8,3.1,3.5,6.6,7.4,6.9,6.9,6.4,6.9,7.4,8.4,8.7,9.2,9.4,10.6,9.2,3.3,4.7,7.8,9.2,9.0,8.5,7.1,6.6,5.4,3.1,1.6,5.0,8.1,9.7,10.3,11.3,10.9,11.6,11.8,10.8,10.8,10.6,11.3,11.4,5.7,1.5,1.9,4.5,5.4,3.8,6.1,3.8,1.1,3.8,7.6,10.5,10.6,10.6,10.1,8.8,8.6,9.1,9.7,10.6,10.5,10.8,10.5,9.4,3.6,3.6,4.9,9.6,8.4,10.0,8.4,6.4,5.6,4.7,0.5,5.7,9.0,9.8],"wind_gusts_10m":[18.7,18.4,18.7,16.9,14.8,15.8,15.5,12.2,11.2,11.2,11.2,9.7,10.1,15.8,15.1,15.1,15.8,11.9,9.4,9.4,6.5,11.5,13.0,12.6,11.9,11.9,12.6,12.6,14.4,14.8,15.5,15.8,18.0,18.0,15.5,10.1,15.1,17.6,18.7,17.6,16.6,13.7,12.6,10.1,6.1,9.0,13.7,16.6,17.6,19.1,19.1,19.4,20.5,20.2,18.7,18.4,19.1,20.5,19.4,10.4,7.6,11.2,13.0,12.2,12.6,13.0,8.3,7.9,13.3,18.0,18.4,18.7,18.0,17.3,15.1,15.1,16.2,18.0,18.4,18.0,18.4,18.0,15.5,7.9,10.8,18.4,18.7,18.7,18.7,16.6,13.3,11.5,9.7,9.7,15.1,16.9],"wind_direction_10m":[42,45,42,36,25,20,22,38,43,45,45,99,167,183,198,207,215,189,167,126,66,41,29,28,28,27,39,39,43,48,45,43,35,39,77,184,193,201,209,216,225,225,228,249,333,21,32,31,29,27,27,26,27,30,30,28,27,24,35,45,112,151,172,229,208,197,90,107,31,27,28,28,27,35,33,34,27,24,31,26,22,32,45,180,216,214,223,210,211,227,225,238,315,35,23,24],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,96,98,100,100,100,100,100,100,95,100,99,100,100,100,100,87,83,82,86,86,75,35,4,0,11,58,52,76,78,86,82,73,84,81,94,92,40,49,34,27,28,20,46,100,71,13,100,52,0,76,83,86,88,93,87,91,57,46,41,86,100,100,100,65,39,18,75,39,30,34,44,92,100,0,100,77,47,80,24,33,71,85,22,0,0],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,3,3,3],"temperature_2m_max":[22.9,22.7,24.5,23.9],"temperature_2m_min":[19.6,19.5,20.0,20.0],"precipitation_probability_max":[0,0,0,0],"precipitation_sum":[0.2,0.0,0.0,0.0],"wind_gusts_10m_max":[18.7,18.7,20.5,18.7],"wind_direction_10m_dominant":[54,44,33,21]}},"funchal":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":19.0,"apparent_temperature":19.8,"weather_code":3,"wind_speed_10m":5.2,"wind_gusts_10m":10.1,"wind_direction_10m":335,"precipitation":0.0,"cloud_cover":94,"relative_humidity_2m":77,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[19.3,19.2,19.0,19.2,18.7,18.8,19.0,18.8,18.9,19.1,20.5,21.3,22.2,22.5,22.9,22.4,21.9,21.4,21.0,20.5,20.1,19.9,19.3,19.0,19.0,19.2,19.2,18.9,18.8,18.7,18.5,18.7,19.0,19.0,20.9,21.8,22.6,23.0,23.1,23.1,22.7,22.3,21.8,21.0,20.4,20.2,20.0,19.8,19.8,19.8,19.8,19.7,19.7,19.9,19.9,19.9,20.0,20.3,21.1,22.0,22.5,22.7,22.9,23.0,22.8,22.4,22.0,21.2,20.8,20.7,20.7,20.7,20.7,20.6,20.5,20.5,20.3,20.4,20.2,20.1,19.9,20.2,21.4,22.5,23.7,24.2,24.2,23.8,23.8,23.3,23.1,22.4,21.6,21.1,21.1,21.0],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,0,1,2,3,3,3,3,3,3,3,3,3,3,3,2,1,1],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,2,2,1,1,0,0,0,2,2,2,3,3,2,3,3,3,2,1,2,2,1,1,1,3,3,3,1,1,1,3,2,2,2,2,2,2,1,1,2,1,3,3,3,3,2,3,2,2,3,3,3,2,3,3,1,1,2,3,2,2,2,3,3,2,2,2,2],"wind_speed_10m":[2.7,5.4,3.5,4.3,5.1,3.4,2.3,2.3,0.4,0.8,1.1,3.6,4.3,6.2,7.4,7.9,5.6,5.2,4.5,1.9,1.5,4.0,5.0,5.0,5.7,5.1,4.3,5.5,5.5,4.7,6.1,8.7,8.3,6.8,2.9,5.2,6.6,8.0,8.9,9.0,8.0,8.4,9.5,10.2,10.5,10.2,10.3,10.8,11.1,11.4,11.3,11.0,10.8,11.3,13.2,14.7,16.8,16.7,18.1,18.8,20.4,21.7,22.6,22.4,21.9,20.6,20.1,19.9,18.6,17.1,16.9,17.1,16.8,16.0,16.1,14.6,14.2,14.6,13.8,11.8,10.8,10.0,7.5,9.2,9.5,12.0,13.4,13.1,12.6,12.4,12.4,13.0,13.2,14.0,14.1,13.9],"wind_gusts_10m":[17.6,20.2,21.2,19.1,19.8,19.1,15.5,12.2,11.5,8.6,8.6,11.9,13.0,14.8,16.2,18.7,18.4,15.1,14.4,11.5,9.0,9.0,10.8,10.4,10.1,10.4,10.4,11.5,11.9,10.1,10.8,15.5,17.6,15.1,12.6,13.0,14.8,18.0,19.4,19.8,18.7,18.7,19.8,22.3,23.0,23.4,25.2,25.9,26.6,27.7,28.1,28.1,27.7,30.6,33.1,37.8,40.0,41.0,45.0,45.4,46.8,50.4,52.2,52.2,44.6,42.8,40.0,40.3,40.3,36.0,33.8,35.3,35.6,41.4,40.3,38.5,31.7,29.2,27.7,26.3,22.3,20.5,18.7,19.1,19.8,24.5,27.7,27.4,26.3,25.9,25.2,25.6,27.7,29.9,31.7,34.2],"wind_direction_10m":[337,4,24,5,352,342,321,51,360,243,90,143,132,126,141,150,165,164,209,248,346,10,360,339,325,321,336,337,349,351,357,355,360,3,90,115,131,126,117,106,98,83,65,58,49,42,36,30,29,28,31,23,26,27,29,31,31,33,46,58,58,61,61,57,63,57,57,55,43,39,40,44,45,44,50,40,36,40,39,27,26,21,55,64,79,99,98,98,92,80,73,62,47,44,40,37],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,97,99,94,96,100,98,92,100,100,77,86,86,72,57,36,13,0,0,3,76,69,64,82,84,67,83,81,83,56,38,51,78,43,26,14,90,100,93,36,40,38,91,56,51,53,53,55,47,42,41,47,43,100,100,100,100,76,100,54,64,93,83,86,67,100,100,16,15,76,93,76,69,73,85,83,60,58,50,45],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,3,3,3],"temperature_2m_max":[22.9,23.1,23.0,24.2],"temperature_2m_min":[18.6,18.5,19.6,19.9],"precipitation_probability_max":[3,0,3,3],"precipitation_sum":[0.0,0.0,0.0,0.0],"wind_gusts_10m_max":[21.2,25.9,52.2,41.4],"wind_direction_10m_dominant":[73,45,46,54]}},"machico":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":18.6,"apparent_temperature":18.6,"weather_code":3,"wind_speed_10m":8.9,"wind_gusts_10m":25.2,"wind_direction_10m":320,"precipitation":0.0,"cloud_cover":97,"relative_humidity_2m":75,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[19.7,19.8,20.1,20.0,19.6,19.7,19.5,19.1,19.0,19.1,19.9,20.3,21.0,21.5,21.4,21.8,21.9,21.5,21.3,20.3,19.7,19.6,19.3,18.7,18.3,18.2,18.3,17.8,17.7,17.3,17.1,17.2,17.6,18.2,20.7,21.9,22.4,22.8,22.8,22.3,22.2,21.4,20.9,20.4,20.0,19.8,19.4,19.4,19.5,19.5,19.3,19.4,19.4,19.5,19.2,18.8,18.8,19.3,20.5,21.1,21.6,21.8,21.9,22.0,21.9,21.8,21.5,20.8,20.3,20.2,20.2,20.2,20.0,20.0,20.0,19.7,19.7,19.8,19.5,19.0,18.6,18.6,20.6,22.2,23.3,23.7,23.8,23.4,23.5,23.2,22.8,22.0,21.2,20.4,20.2,20.0],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.1,0.0,0.0,0.0,0.1,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,0,1,2,3,3,3,3,3,3,3,3,3,3,3,2,1,1],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,1,1,1,2,2,1,2,2,2,2,3,2,3,2,2,2,2,2,2,3,2,2,2,3,3,3,2,2,2,2,2,2,3,3,3,2,2,3,3,2,3,3,3,3,3,3,2,2,3,3,3,3,3,3,1,1,3,3,3,3,3,3,3,2,2,2,2],"wind_speed_10m":[21.4,20.4,17.9,17.2,17.0,15.8,13.8,14.4,12.5,10.5,12.7,11.6,11.9,13.7,16.3,17.5,18.7,18.0,15.5,14.8,12.3,10.6,9.8,9.2,8.7,8.1,7.9,7.9,7.7,7.4,7.9,9.0,9.2,8.6,5.9,8.0,9.5,13.0,15.0,13.1,13.2,13.2,12.3,11.7,10.1,8.7,8.5,8.8,8.7,9.4,9.8,10.4,10.7,10.9,10.8,9.1,9.1,10.5,12.1,13.3,13.2,14.5,16.8,17.6,16.8,13.0,15.3,13.0,10.7,10.4,9.4,9.5,9.0,9.2,7.9,7.6,7.3,7.4,6.2,6.6,7.9,7.9,5.2,6.4,7.6,10.2,11.5,10.7,10.0,9.0,10.0,11.8,11.5,9.1,9.4,9.0],"wind_gusts_10m":[49.3,50.0,50.8,53.3,50.0,47.2,46.4,41.8,39.6,35.6,31.3,34.2,36.0,35.6,37.1,39.6,40.0,41.0,39.6,33.5,34.9,31.0,28.1,26.3,25.2,22.7,19.4,18.7,17.6,16.9,16.9,19.8,22.0,22.0,20.5,21.2,23.0,29.9,34.2,35.6,34.2,34.6,34.2,33.1,31.7,27.7,23.8,23.4,23.8,25.2,27.7,29.2,29.9,29.5,29.5,28.4,27.7,32.4,34.6,36.7,38.2,40.3,41.0,39.2,39.2,38.9,34.6,40.0,34.6,31.7,29.5,28.1,29.2,27.7,27.0,23.0,22.3,21.6,21.6,19.4,21.6,23.0,22.7,19.8,20.9,24.1,27.7,27.4,25.9,25.9,26.3,26.3,31.3,31.0,29.5,29.2],"wind_direction_10m":[347,339,341,340,343,336,345,347,342,338,352,355,358,5,6,8,360,1,360,360,357,350,336,321,318,315,317,309,307,299,294,299,309,303,349,18,25,24,21,21,17,17,15,11,4,353,348,351,353,356,352,346,346,352,360,353,353,356,23,33,35,42,43,41,47,42,41,44,20,20,23,29,29,26,30,8,20,29,10,347,336,321,348,27,25,45,44,45,49,37,26,20,20,9,7,358],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,90,100,97,92,100,99,96,100,100,89,72,58,38,37,31,46,55,43,68,71,72,72,83,80,100,81,80,75,74,55,69,94,68,53,51,94,100,96,74,74,79,69,69,72,87,84,87,76,79,86,95,71,100,100,100,100,90,97,71,72,100,90,89,83,100,100,33,40,100,89,100,100,87,83,90,78,74,70,73],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,3,3,3],"temperature_2m_max":[21.9,22.9,22.0,23.8],"temperature_2m_min":[18.3,17.1,18.7,18.4],"precipitation_probability_max":[3,0,3,3],"precipitation_sum":[0.0,0.0,0.6,0.4],"wind_gusts_10m_max":[53.3,35.6,41.0,31.3],"wind_direction_10m_dominant":[350,350,21,20]}},"saolourenco":{"current":{"time":"2026-10-19T23:15","interval":900,"temperature_2m":18.1,"apparent_temperature":17.9,"weather_code":3,"wind_speed_10m":8.9,"wind_gusts_10m":25.2,"wind_direction_10m":320,"precipitation":0.0,"cloud_cover":97,"relative_humidity_2m":75,"is_day":0},"hourly":{"time":["2026-10-19T00:00","2026-10-19T01:00","2026-10-19T02:00","2026-10-19T03:00","2026-10-19T04:00","2026-10-19T05:00","2026-10-19T06:00","2026-10-19T07:00","2026-10-19T08:00","2026-10-19T09:00","2026-10-19T10:00","2026-10-19T11:00","2026-10-19T12:00","2026-10-19T13:00","2026-10-19T14:00","2026-10-19T15:00","2026-10-19T16:00","2026-10-19T17:00","2026-10-19T18:00","2026-10-19T19:00","2026-10-19T20:00","2026-10-19T21:00","2026-10-19T22:00","2026-10-19T23:00","2026-10-20T00:00","2026-10-20T01:00","2026-10-20T02:00","2026-10-20T03:00","2026-10-20T04:00","2026-10-20T05:00","2026-10-20T06:00","2026-10-20T07:00","2026-10-20T08:00","2026-10-20T09:00","2026-10-20T10:00","2026-10-20T11:00","2026-10-20T12:00","2026-10-20T13:00","2026-10-20T14:00","2026-10-20T15:00","2026-10-20T16:00","2026-10-20T17:00","2026-10-20T18:00","2026-10-20T19:00","2026-10-20T20:00","2026-10-20T21:00","2026-10-20T22:00","2026-10-20T23:00","2026-10-21T00:00","2026-10-21T01:00","2026-10-21T02:00","2026-10-21T03:00","2026-10-21T04:00","2026-10-21T05:00","2026-10-21T06:00","2026-10-21T07:00","2026-10-21T08:00","2026-10-21T09:00","2026-10-21T10:00","2026-10-21T11:00","2026-10-21T12:00","2026-10-21T13:00","2026-10-21T14:00","2026-10-21T15:00","2026-10-21T16:00","2026-10-21T17:00","2026-10-21T18:00","2026-10-21T19:00","2026-10-21T20:00","2026-10-21T21:00","2026-10-21T22:00","2026-10-21T23:00","2026-10-22T00:00","2026-10-22T01:00","2026-10-22T02:00","2026-10-22T03:00","2026-10-22T04:00","2026-10-22T05:00","2026-10-22T06:00","2026-10-22T07:00","2026-10-22T08:00","2026-10-22T09:00","2026-10-22T10:00","2026-10-22T11:00","2026-10-22T12:00","2026-10-22T13:00","2026-10-22T14:00","2026-10-22T15:00","2026-10-22T16:00","2026-10-22T17:00","2026-10-22T18:00","2026-10-22T19:00","2026-10-22T20:00","2026-10-22T21:00","2026-10-22T22:00","2026-10-22T23:00"],"temperature_2m":[19.1,19.3,19.5,19.5,19.1,19.2,18.9,18.5,18.4,18.6,19.4,19.7,20.4,20.9,20.9,21.2,21.4,20.9,20.7,19.7,19.1,19.0,18.8,18.2,17.8,17.6,17.7,17.2,17.2,16.8,16.5,16.7,17.1,17.7,20.1,21.4,21.9,22.2,22.3,21.8,21.6,20.8,20.3,19.8,19.4,19.2,18.9,18.8,18.9,18.9,18.8,18.9,18.9,18.9,18.6,18.2,18.3,18.7,20.0,20.6,21.0,21.2,21.4,21.4,21.3,21.2,20.9,20.3,19.7,19.6,19.7,19.6,19.5,19.5,19.4,19.2,19.1,19.3,19.0,18.5,18.0,18.0,20.0,21.6,22.7,23.2,23.3,22.8,23.0,22.6,22.2,21.5,20.6,19.9,19.6,19.4],"precipitation":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0,0.1,0.0,0.1,0.0,0.0,0.0,0.0,0.0,0.1,0.0,0.0,0.0,0.1,0.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.0],"precipitation_probability":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,1,2,3,2,1,0,0,0,0,1,2,3,3,3,3,3,3,3,3,3,3,3,2,1,1],"weather_code":[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,1,1,1,2,2,1,2,2,2,2,3,2,3,2,2,2,2,2,2,3,2,2,2,3,3,3,2,2,2,2,2,2,3,3,3,2,2,3,3,2,3,3,3,3,3,3,2,2,3,3,3,3,3,3,1,1,3,3,3,3,3,3,3,2,2,2,2],"wind_speed_10m":[21.4,20.4,17.9,17.2,17.0,15.8,13.8,14.4,12.5,10.5,12.7,11.6,11.9,13.7,16.3,17.5,18.7,18.0,15.5,14.8,12.3,10.6,9.8,9.2,8.7,8.1,7.9,7.9,7.7,7.4,7.9,9.0,9.2,8.6,5.9,8.0,9.5,13.0,15.0,13.1,13.2,13.2,12.3,11.7,10.1,8.7,8.5,8.8,8.7,9.4,9.8,10.4,10.7,10.9,10.8,9.1,9.1,10.5,12.1,13.3,13.2,14.5,16.8,17.6,16.8,13.0,15.3,13.0,10.7,10.4,9.4,9.5,9.0,9.2,7.9,7.6,7.3,7.4,6.2,6.6,7.9,7.9,5.2,6.4,7.6,10.2,11.5,10.7,10.0,9.0,10.0,11.8,11.5,9.1,9.4,9.0],"wind_gusts_10m":[49.3,50.0,50.8,53.3,50.0,47.2,46.4,41.8,39.6,35.6,31.3,34.2,36.0,35.6,37.1,39.6,40.0,41.0,39.6,33.5,34.9,31.0,28.1,26.3,25.2,22.7,19.4,18.7,17.6,16.9,16.9,19.8,22.0,22.0,20.5,21.2,23.0,29.9,34.2,35.6,34.2,34.6,34.2,33.1,31.7,27.7,23.8,23.4,23.8,25.2,27.7,29.2,29.9,29.5,29.5,28.4,27.7,32.4,34.6,36.7,38.2,40.3,41.0,39.2,39.2,38.9,34.6,40.0,34.6,31.7,29.5,28.1,29.2,27.7,27.0,23.0,22.3,21.6,21.6,19.4,21.6,23.0,22.7,19.8,20.9,24.1,27.7,27.4,25.9,25.9,26.3,26.3,31.3,31.0,29.5,29.2],"wind_direction_10m":[347,339,341,340,343,336,345,347,342,338,352,355,358,5,6,8,360,1,360,360,357,350,336,321,318,315,317,309,307,299,294,299,309,303,349,18,25,24,21,21,17,17,15,11,4,353,348,351,353,356,352,346,346,352,360,353,353,356,23,33,35,42,43,41,47,42,41,44,20,20,23,29,29,26,30,8,20,29,10,347,336,321,348,27,25,45,44,45,49,37,26,20,20,9,7,358],"cloud_cover":[100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,90,100,97,92,100,99,96,100,100,89,72,58,38,37,31,46,55,43,68,71,72,72,83,80,100,81,80,75,74,55,69,94,68,53,51,94,100,96,74,74,79,69,69,72,87,84,87,76,79,86,95,71,100,100,100,100,90,97,71,72,100,90,89,83,100,100,33,40,100,89,100,100,87,83,90,78,74,70,73],"is_day":[0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0]},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"weather_code":[3,3,3,3],"temperature_2m_max":[21.4,22.3,21.4,23.3],"temperature_2m_min":[17.8,16.5,18.2,17.9],"precipitation_probability_max":[3,0,3,3],"precipitation_sum":[0.0,0.0,0.6,0.4],"wind_gusts_10m_max":[53.3,35.6,41.0,31.3],"wind_direction_10m_dominant":[350,350,21,20]}}},"sea":{"portomoniz":{"current":{"time":"2026-10-19T23:15","interval":900,"wave_height":2.46},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"wave_height_max":[2.5,2.46,1.74,1.9]}},"seixal":{"current":{"time":"2026-10-19T23:15","interval":900,"wave_height":2.24},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"wave_height_max":[2.24,2.22,1.6,1.76]}},"pontadosol":{"current":{"time":"2026-10-19T23:15","interval":900,"wave_height":1.64},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"wave_height_max":[1.64,1.64,1.2,1.38]}},"funchal":{"current":{"time":"2026-10-19T23:15","interval":900,"wave_height":1.14},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"wave_height_max":[1.14,1.12,1.0,0.98]}},"machico":{"current":{"time":"2026-10-19T23:15","interval":900,"wave_height":1.12},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"wave_height_max":[1.28,1.12,1.1,1.02]}},"saolourenco":{"current":{"time":"2026-10-19T23:15","interval":900,"wave_height":1.12},"daily":{"time":["2026-10-19","2026-10-20","2026-10-21","2026-10-22"],"wave_height_max":[1.28,1.12,1.1,1.02]}}}}/*SNAPSHOT-END*/;
+
+const DAYS = [
+ {id:"d1",date:"2026-11-10",dow:"Wt",title:"Przylot i dziki północny zachód",place:"Porto Moniz",base:"Porto Moniz",regions:["portomoniz"],cams:["porto-moniz","ponta-delgada"]},
+ {id:"d2",date:"2026-11-11",dow:"Śr",title:"Północne wybrzeże i zachód słońca na Pico Ruivo",place:"Północ → Funchal",base:"Vila Camacho, Funchal",regions:["fanal","seixal","santana","ruivo"],cams:["seixal","boaventura","sao-jorge","santana-parque-tematico","achada-do-teixeira"]},
+ {id:"d3",date:"2026-11-12",dow:"Czw",title:"Levada 25 Fontes i słoneczne południe",place:"Rabaçal, Funchal",base:"Vila Camacho, Funchal",regions:["rabacal","pontadosol","funchal"],cams:["rabacal-madeira","ponta-do-sol","ribeira-brava","camara-de-lobos","funchal-baia-do-funchal"]},
+ {id:"d4",date:"2026-11-13",dow:"Pt",title:"Wschód nad chmurami i przeprowadzka do Machico",place:"Areeiro → Machico",base:"Residencial Familia, Machico",regions:["areeiro","funchal","machico"],cams:["pico-do-arieiro","funchal-parque-ecologico","machico","portela-porto-da-cruz","praia-faial"]},
+ {id:"d5",date:"2026-11-14",dow:"Sob",title:"Ponta de São Lourenço i plaża w Machico",place:"Caniçal, Machico",base:"Residencial Familia, Machico",regions:["saolourenco","machico"],cams:["canical","machico","santa-cruz"]},
+ {id:"d6",date:"2026-11-15",dow:"Nd",title:"Zwrot auta i wylot do Katowic",place:"Lotnisko FNC",base:"—",regions:["machico"],cams:["santa-cruz","machico"]}
+];
+
+/* cat: trek | view | base | move | town | water | sight */
+const STOPS = [
+ ["d1","11:25","","Przylot · odbiór auta","Lotnisko FNC — przylot","Przylot 11:25; odbiór auta około 12:30–12:45.","move","Aeroporto Internacional da Madeira Cristiano Ronaldo"],
+ ["d1","14:15","","Kolejka","Teleférico das Achadas da Cruz — parking i górna stacja","Główny cel pierwszego dnia. Sprawdź, czy kolejka działa, i pogodę przed wyjazdem.","sight","Teleférico das Achadas da Cruz, Porto Moniz",{cam:"porto-moniz"}],
+ ["d1","14:30","15:45","Punkt widokowy","Fajã da Quebrada Nova — dolna stacja kolejki","Zjazd kolejką i spacer tylko dostępnym odcinkiem na dole.","view","Fajã da Quebrada Nova, Achadas da Cruz"],
+ ["d1","16:15","","Baseny","Piscinas Naturais de Porto Moniz","Kąpiel tylko przy odpowiednich warunkach morza i otwartym obiekcie.","water","Piscinas Naturais do Porto Moniz",{sea:"portomoniz",cam:"porto-moniz"}],
+ ["d1","17:00","","Nocleg","Porto Moniz — nocleg / centrum","Dokładny hotel nie został podany na mapie.","base","Porto Moniz, Madeira"],
+
+ ["d2","07:30","","Nocleg","Porto Moniz — wyjazd z hotelu","Śniadanie i checkout; bagaże do samochodu.","base","Porto Moniz, Madeira"],
+ ["d2","08:05","09:05","Natura","Fanal Forest","Priorytet: charakterystyczne drzewa laurisilvy, najlepiej we mgle.","sight","Fanal, Paul da Serra, Porto Moniz"],
+ ["d2","09:35","09:50","Punkt widokowy","Ribeira da Janela — skały nad oceanem","Krótki postój, około 15 minut.","view","Ilhéus da Ribeira da Janela, Porto Moniz"],
+ ["d2","10:10","10:50","Plaża","Praia do Porto do Seixal — czarna plaża","Zdjęcia i krótki spacer; kąpiel tylko gdy ocean bezpieczny.","water","Praia do Porto do Seixal",{sea:"seixal",cam:"seixal"}],
+ ["d2","10:50","11:05","Wodospad","Miradouro do Véu da Noiva — wodospad","Widok na wodospad spadający z klifu ku oceanowi.","view","Miradouro do Véu da Noiva, Seixal"],
+ ["d2","11:05","11:25","Przejazd","Famous Tunnel of Madeira — wyjazd z tunelu VE2","Wyjazd z tunelu Água d’Alto w stronę São Vicente. To przejazd, nie postój: nie zatrzymuj się w tunelu ani na jezdni.","move","32.80986,-17.05988",{warn:"Tylko przejazd"}],
+ ["d2","11:25","11:50","Kawa","São Vicente — krótki postój","Krótka kawa / przekąska.","town","São Vicente, Madeira"],
+ ["d2","12:15","12:35","Punkt widokowy","Miradouro de São Cristóvão","Klify i dolina Boaventura.","view","Miradouro de São Cristóvão, Boaventura",{cam:"boaventura"}],
+ ["d2","po drodze","","Przejazd","São Jorge — północna droga","Widokowy przejazd północnym wybrzeżem, bez dłuższego postoju.","move","São Jorge, Santana",{cam:"sao-jorge"}],
+ ["d2","13:20","14:00","Atrakcja","Casas Típicas de Santana — tradycyjne domki","Krótkie zwiedzanie domków Santany.","sight","Núcleo de Casas Típicas de Santana",{cam:"santana-parque-tematico"}],
+ ["d2","14:40","","Parking · trekking","Achada do Teixeira — parking PR1.2","Start podejścia PR1.2 na Pico Ruivo. Wejście tylko z rezerwacją SIMplifica na wybrane okno 30 min.","trek","Parque de Estacionamento Achada do Teixeira",{pr:"PR1.2",cam:"achada-do-teixeira"}],
+ ["d2","16:50","18:10","Szczyt","Pico Ruivo — zachód słońca","Najwyższy szczyt Madery (1862 m). Zejście po zmroku tylko gdy pogoda i dostęp pozwalają; czołówki obowiązkowo.","trek","Pico Ruivo, Santana",{pr:"PR1.2",sun:"set",wx:"ruivo"}],
+ ["d2","20:45","","Nocleg","Vila Camacho Guest House — nocleg","Check-in po powrocie z Achada do Teixeira.","base","Vila Camacho Guest House, São Martinho, Funchal"],
+
+ ["d3","08:15","","Wyjazd","Vila Camacho Guest House — wyjazd","","base","Vila Camacho Guest House, São Martinho, Funchal"],
+ ["d3","09:20","","Parking · trekking","Rabaçal — górny parking PR6 (ER110/ER105)","Tu zostaje auto; do leśniczówki ok. 2 km pieszo w dół asfaltem albo lokalnym busem.","trek","Parque de Estacionamento Rabaçal, Calheta",{pr:"PR6",cam:"rabacal-madeira"}],
+ ["d3","09:20","10:15","Trekking","Casa Florestal do Rabaçal — początek lewady","Zejście pieszo lub busem. Właściwa lewada zaczyna się poniżej parkingu.","trek","Casa de Abrigo do Rabaçal, Calheta",{pr:"PR6"}],
+ ["d3","10:15","13:30","Trekking","PR6 — Levada das 25 Fontes (laguna)","Główny cel dnia. Ok. 8,6 km szlaku tam i z powrotem + dojście z parkingu, jeśli bez busa.","trek","Lagoa das 25 Fontes, Rabaçal",{pr:"PR6",wx:"rabacal"}],
+ ["d3","14:55","15:35","Lunch","Ponta do Sol — centrum i promenada","Późny lunch i spacer.","town","Ponta do Sol, Madeira",{cam:"ponta-do-sol",food:true}],
+ ["d3","15:35","15:50","Wodospad","Cascata dos Anjos — wodospad na dawnej drodze","Oficjalny zakaz wejścia na stary odcinek ER101. Nie wchodź za bariery; tylko po oficjalnym zniesieniu zakazu.","view","Cascata dos Anjos, Ponta do Sol",{stop:"Zakaz wstępu"}],
+ ["d3","opcja","","Trekking","Levada Nova / Levada do Moinho — Ponta do Sol","Poza planem godzinowym: brak potwierdzenia otwarcia i brak czasu po PR6.","trek","Levada Nova, Lombada da Ponta do Sol",{alt:"Opcjonalnie"}],
+ ["d3","16:20","16:50","Punkt widokowy","Cabo Girão Skywalk","Szklana platforma 580 m nad oceanem. Główny wybór na ten dzień.","view","Cabo Girão Skywalk, Câmara de Lobos"],
+ ["d3","zamiast","","Punkt widokowy","Miradouro da Terra Grande — alternatywa","Zamiennik Cabo Girão; wymaga objazdu i nie jest po drodze.","view","Miradouro da Terra Grande, Serra de Água",{alt:"Alternatywa"}],
+ ["d3","17:15","17:40","Miasteczko","Câmara de Lobos — port rybacki","Skróć lub pomiń przy opóźnieniach po trekkingu.","town","Câmara de Lobos, Madeira",{cam:"camara-de-lobos"}],
+ ["d3","18:00","20:00","Kolacja","Funchal — Zona Velha / Rua de Santa Maria","Spacer po starym mieście z malowanymi drzwiami, kolacja.","town","Rua de Santa Maria, Funchal",{food:true}],
+ ["d3","wieczór","","Spacer","Marina do Funchal","Nabrzeże i spacer po centrum.","town","Marina do Funchal",{cam:"funchal-baia-do-funchal"}],
+ ["d3","20:15","","Nocleg","Vila Camacho Guest House — nocleg","","base","Vila Camacho Guest House, São Martinho, Funchal"],
+
+ ["d4","06:45","07:35","Szczyt","Pico do Areeiro — wschód słońca","Bądź na górze przed świtem cywilnym. Dojazd autem z Vila Camacho ok. 40 min. Kurtka i czapka: na 1818 m bywa około 5–8°C.","trek","Pico do Areeiro, Madeira",{sun:"rise",wx:"areeiro",cam:"pico-do-arieiro"}],
+ ["d4","08:00","09:25","Trekking","Pedra Rija — krótki fragment PR1","Spacer od Pico do Areeiro tam i z powrotem. Tylko na otwartym odcinku i ze slotem PR1.","trek","Pedra Rija, Vereda do Areeiro PR1",{pr:"PR1"}],
+ ["d4","10:05","10:25","Sport","CF Andorinha — boiska Ronaldo","Kompleks klubu z dzieciństwa Ronaldo w Santo António. Tylko z zewnątrz, wejście po zgodzie klubu.","sight","32.67482,-16.93462"],
+ ["d4","10:45","11:20","Checkout","Vila Camacho Guest House — checkout","","base","Vila Camacho Guest House, São Martinho, Funchal"],
+ ["d4","12:05","13:45","Lunch","Machico — centrum i lunch","Lunch i odpoczynek przed zameldowaniem.","town","Machico, Madeira",{cam:"machico",food:true}],
+ ["d4","14:00","14:30","Check-in","Residencial Familia — nocleg","Check-in na 2 ostatnie noce.","base","Residencial Familia, Caminho do Cemitério 24, Machico"],
+ ["d4","15:00","15:20","Punkt widokowy","Miradouro da Portela","Widok na Penha d’Águia i północno-wschodnie wybrzeże.","view","Miradouro da Portela, Machico",{cam:"portela-porto-da-cruz"}],
+ ["d4","15:45","16:25","Kawa","Porto da Cruz — wybrzeże","Spacer i kawa nad oceanem.","town","Porto da Cruz, Machico",{food:true}],
+ ["d4","16:45","17:05","Punkt widokowy","Miradouro do Guindaste","Oficjalnie zamknięty; tylko po potwierdzeniu ponownego otwarcia.","view","Miradouro do Guindaste, Faial",{stop:"Zamknięty"}],
+ ["d4","16:45","17:05","Punkt widokowy","Fortim do Faial — alternatywa Guindaste","Punkt widokowy na wypadek, gdyby Guindaste nadal był zamknięty.","view","Fortim do Faial, Faial",{alt:"Alternatywa",cam:"praia-faial"}],
+ ["d4","17:50","","Nocleg","Residencial Familia — powrót","","base","Residencial Familia, Caminho do Cemitério 24, Machico"],
+
+ ["d5","08:00","08:25","Parking · trekking","Baía d’Abra — parking PR8","Parking na początku Vereda da Ponta de São Lourenço.","trek","Parque de Estacionamento Baía d Abra, Caniçal",{pr:"PR8",cam:"canical"}],
+ ["d5","08:30","12:00","Trekking","PR8 Vereda da Ponta de São Lourenço","Wschodni półwysep: zero cienia, mocny wiatr. Woda, krem, czapka. Sprawdź status i ewentualne obejścia przed wejściem.","trek","Ponta de São Lourenço, Caniçal",{pr:"PR8",wx:"saolourenco"}],
+ ["d5","12:20","12:45","Punkt widokowy","Miradouro da Ponta do Rosto","Widoki na klify półwyspu z obu stron.","view","Miradouro da Ponta do Rosto, Caniçal"],
+ ["d5","13:15","16:15","Plaża · lunch","Praia de Machico","Lunch, plaża ze złotym piaskiem, relaks i opcjonalna kąpiel.","water","Praia de Machico",{sea:"machico",cam:"machico",food:true}],
+ ["d5","16:15","16:45","Punkt widokowy","Miradouro do Pico do Facho","Panorama Machico i lądujących samolotów.","view","Miradouro do Pico do Facho, Machico"],
+ ["d5","17:00","","Nocleg","Residencial Familia — nocleg","","base","Residencial Familia, Caminho do Cemitério 24, Machico"],
+
+ ["d6","08:00","","Checkout","Residencial Familia — checkout","","base","Residencial Familia, Caminho do Cemitério 24, Machico"],
+ ["d6","08:30","08:45","Auto","Lotnisko FNC — zwrot samochodu","Zwrot auta i kontrola stanu pojazdu (zdjęcia!).","move","Aeroporto Internacional da Madeira Cristiano Ronaldo"],
+ ["d6","11:25","","Wylot","Lotnisko FNC — wylot do Katowic","Lot FNC → KTW o 11:25.","move","Aeroporto Internacional da Madeira Cristiano Ronaldo"]
+].map((s,i)=>({i,day:s[0],t:s[1],end:s[2],kind:s[3],name:s[4],desc:s[5],cat:s[6],loc:s[7],...(s[8]||{})}));
+
+const CAMS = {
+ "porto-moniz":["Porto Moniz","baseny naturalne i ocean",20],
+ "ponta-delgada":["Ponta Delgada","północne wybrzeże",30],
+ "seixal":["Seixal","czarna plaża, wodospady",20],
+ "boaventura":["Boaventura","dolina i klify północy",200],
+ "sao-jorge":["São Jorge","północna droga",300],
+ "santana-parque-tematico":["Santana","domki i dolina",430],
+ "achada-do-teixeira":["Achada do Teixeira","start PR1.2 na Pico Ruivo",1592],
+ "pico-do-arieiro":["Pico do Arieiro","szczyt, czy nad chmurami?",1818],
+ "eira-do-serrado":["Eira do Serrado","Curral das Freiras, góry",1095],
+ "rabacal-madeira":["Rabaçal","start PR6 25 Fontes",1050],
+ "ponta-do-sol":["Ponta do Sol","słoneczne południe",20],
+ "ribeira-brava":["Ribeira Brava","południe, droga do Cabo Girão",20],
+ "camara-de-lobos":["Câmara de Lobos","port rybacki",20],
+ "camara-de-lobos-baia":["Câmara de Lobos — zatoka","widok na zatokę",30],
+ "funchal-baia-do-funchal":["Funchal — zatoka","marina i port",40],
+ "funchal-pontinha":["Funchal — Pontinha","port i molo",10],
+ "funchal-lido":["Funchal — Lido","wybrzeże zachodnie",30],
+ "funchal-parque-ecologico":["Parque Ecológico do Funchal","droga na Areeiro",1200],
+ "monte":["Monte","nad Funchal",550],
+ "portela-porto-da-cruz":["Portela / Porto da Cruz","Penha d’Águia",620],
+ "praia-faial":["Faial","plaża i Fortim",20],
+ "machico":["Machico","zatoka i plaża",20],
+ "canical":["Caniçal","przy PR8",20],
+ "santa-cruz":["Santa Cruz","przy lotnisku",20],
+ "santo-da-serra-golf":["Santo da Serra","płaskowyż nad Machico",680],
+ "palheiro-golf":["Palheiro","wzgórza nad Funchal",500]
+};
+const camUrl = s => "https://www.netmadeira.com/webcams-madeira/"+s;
+
+const FOOD = {
+ d1:[
+  {n:"Restaurante Cachalote",w:"Porto Moniz · przy basenach",d:"Kultowe miejsce wbudowane w wulkaniczne skały, działa od lat 60. Ryby i owoce morza z widokiem na fale.",q:"Restaurante Cachalote Porto Moniz",h:"po basenach, 17:00+"},
+  {n:"Restaurante Orca",w:"Porto Moniz · obok basenów",d:"Klasyczna rybna kuchnia madeirska: espada, lapas (skałoczepy), bolo do caco.",q:"Restaurante Orca Porto Moniz",h:"kolacja"},
+  {n:"Restaurante Polo Norte",w:"Porto Moniz",d:"Tańsza opcja z menu dnia; chwalą grillowaną ośmiornicę i domowe ciasto kokosowe.",q:"Restaurante Polo Norte Porto Moniz",h:"kolacja, budżetowo"}],
+ d2:[
+  {n:"Restaurante Quebra Mar",w:"São Vicente · nabrzeże",d:"Najbardziej znany lokal w São Vicente, z widokami na wybrzeże. Dobry na kawę lub szybki lunch.",q:"Restaurante Quebra Mar São Vicente Madeira",h:"11:25–11:50"},
+  {n:"Restaurante O Colmo",w:"Santana · centrum",d:"Kuchnia regionalna: espetada, milho frito, ryby. Blisko domków Santany.",q:"Restaurante O Colmo Santana Madeira",h:"lunch 13:00–14:00"},
+  {n:"Cantinho da Serra",w:"Santana · droga na Achada do Teixeira",d:"Rustykalna górska gospoda z kominkiem i sycącym jedzeniem. Leży po drodze przed podejściem na Pico Ruivo.",q:"Cantinho da Serra Santana Madeira",h:"przed PR1.2, ~14:00"}],
+ d3:[
+  {n:"Restaurante Sol Poente",w:"Ponta do Sol · przy plaży",d:"Lokal na skałach tuż nad oceanem; ryby i owoce morza, najlepsze światło późnym popołudniem.",q:"Restaurante Sol Poente Ponta do Sol",h:"późny lunch 14:55"},
+  {n:"Estalagem da Ponta do Sol",w:"Ponta do Sol · na klifie",d:"Taras hotelowy z panoramą miasteczka. Dobry na kawę i deser, jeśli lunch był wcześniej.",q:"Estalagem da Ponta do Sol",h:"kawa / deser"},
+  {n:"Gavião Novo",w:"Funchal · Rua de Santa Maria 131",d:"Jedna z najlepszych rybnych restauracji na wyspie. Zarezerwuj stolik, bo miejsca na zewnątrz znikają pierwsze.",q:"Gavião Novo Rua de Santa Maria Funchal",h:"kolacja 18:00–20:00"},
+  {n:"Taberna Ruel",w:"Funchal · Rua de Santa Maria 119",d:"Kuchnia madeirska i portugalska, otwarte nonstop 11:00–23:00.",q:"Taberna Ruel Funchal",h:"kolacja"},
+  {n:"Armazém do Sal",w:"Funchal · centrum",d:"Wyższa półka w dawnym magazynie soli. Opcja na wyjątkową kolację.",q:"Armazém do Sal Funchal",h:"kolacja, rezerwacja"}],
+ d4:[
+  {n:"Mercado Velho",w:"Machico · dawny targ",d:"Restauracja na dziedzińcu starego targu, z cienistym ogrodem przy promenadzie.",q:"Restaurante Mercado Velho Machico",h:"lunch 12:05–13:45"},
+  {n:"Maré Alta",w:"Machico · nad oceanem",d:"Widok na ocean, grillowane lapas, dobre wino.",q:"Restaurante Maré Alta Machico",h:"lunch / kolacja"},
+  {n:"Engenhos do Norte",w:"Porto da Cruz",d:"Ostatnia na wyspie destylarnia rumu napędzana parą. Degustacja rumu i poncha nad oceanem.",q:"Companhia dos Engenhos do Norte Porto da Cruz",h:"15:45–16:25"},
+  {n:"A Pipa",w:"Porto da Cruz · przy brzegu",d:"Owoce morza kilka kroków od wody.",q:"Restaurante A Pipa Porto da Cruz",h:"kolacja"}],
+ d5:[
+  {n:"Muralha’s Bar",w:"Caniçal · port",d:"Rybacka tawerna w tuńczykowej stolicy wyspy. Tuńczyk z grilla po PR8.",q:"Muralhas Bar Caniçal",h:"lunch po PR8"},
+  {n:"Maré Alta",w:"Machico · nad oceanem",d:"Lapas z grilla i ocean, kilka minut od plaży.",q:"Restaurante Maré Alta Machico",h:"lunch 13:15"},
+  {n:"Mercado Velho",w:"Machico · dawny targ",d:"Ogród przy promenadzie, na kolację na koniec wyjazdu.",q:"Restaurante Mercado Velho Machico",h:"kolacja"}],
+ d6:[]
+};
+
+const TRAILS = [
+ {code:"PR1.2",name:"Vereda do Pico Ruivo",day:"d2",start:"Achada do Teixeira",len:"2,8 km w jedną stronę",time:"ok. 1 h 15 min pod górę",fee:"4,50 €",slot:"15:00–15:30",note:"Z planu: parking 14:40, na szczycie 16:50–18:10, zachód ok. 18:09. Okno 15:00–15:30 daje zapas na podejście. Zejście po zmroku: czołówki i sprawdzenie, czy rezerwacja na to pozwala."},
+ {code:"PR6",name:"Levada das 25 Fontes",day:"d3",start:"Rabaçal (parking przy ER110)",len:"ok. 8,6 km tam i z powrotem",time:"3–3,5 h",fee:"4,50 €",slot:"09:00–09:30",note:"Przyjazd na parking ok. 9:20. Między parkingiem a leśniczówką kursuje lokalny bus; pieszo to ok. 2 km asfaltem. Jeśli przewidujesz spóźnienie, weź okno 09:30–10:00."},
+ {code:"PR1",name:"Vereda do Areeiro (do Pedra Rija i z powrotem)",day:"d4",start:"Pico do Areeiro",len:"krótki odcinek tam i z powrotem",time:"ok. 1,5 h",fee:"10,50 € (osobna opłata PR1)",slot:"08:00–08:30",note:"PR1 ma osobny, droższy bilet. Na samym punkcie widokowym Areeiro bilet nie jest potrzebny, ale zejście na szlak (nawet do Pedra Rija) wymaga slotu. Przed rezerwacją sprawdź, czy dozwolone jest wejście i powrót tą samą drogą."},
+ {code:"PR8",name:"Vereda da Ponta de São Lourenço",day:"d5",start:"Baía d’Abra",len:"ok. 8 km tam i z powrotem",time:"3–3,5 h",fee:"4,50 €",slot:"08:30–09:00",note:"Parking 8:00–8:25, start 8:30. Jeden z najbardziej obleganych szlaków, w sobotę rezerwuj z wyprzedzeniem."}
+];
+const SIMPLIFICA = "https://simplifica.madeira.gov.pt/services/78-82-259";
+const IFCN = "https://ifcn.madeira.gov.pt/pt/atividades-de-natureza/percursos-pedestres-recomendados/percursos-pedestres-recomendados.html";
+
+/* ---------- helpers ---------- */
+const $ = (s,el=document)=>el.querySelector(s);
+const esc = s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const mapsUrl = q => "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(/^-?\d/.test(q)?q:q+", Madeira, Portugal");
+const fmtT = d => d && !isNaN(d) ? new Intl.DateTimeFormat("pl-PL",{timeZone:TZ,hour:"2-digit",minute:"2-digit"}).format(d) : "—";
+function madeiraNow(){const p=Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));return {date:`${p.year}-${p.month}-${p.day}`,min:+p.hour*60+ +p.minute,hm:`${p.hour}:${p.minute}`}}
+const toMin = t => {const m=/^(\d{1,2}):(\d{2})/.exec(t||"");return m?+m[1]*60+ +m[2]:null};
+const minOf = d => {const p=new Intl.DateTimeFormat("en-GB",{timeZone:TZ,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(d);return +p.find(x=>x.type==="hour").value*60+ +p.find(x=>x.type==="minute").value};
+const dayDate = iso => new Date(iso+"T12:00:00Z");
+const plDate = (iso,opt={weekday:"short",day:"numeric",month:"short"}) => new Intl.DateTimeFormat("pl-PL",{timeZone:"UTC",...opt}).format(dayDate(iso));
+const daysBetween = (a,b) => Math.round((dayDate(b)-dayDate(a))/864e5);
+
+function sunFor(iso,lat=FUNCHAL.lat,lon=FUNCHAL.lon){
+  if(!window.SunCalc) return null;
+  const t = SunCalc.getTimes(dayDate(iso),lat,lon);
+  const len = (t.sunset - t.sunrise)/6e4;
+  return {...t,len};
+}
+
+/* WMO weather codes */
+function wmo(c){
+  if(c==null) return ["—","cloud"];
+  if(c===0) return ["Bezchmurnie","clear"];
+  if(c===1) return ["Przeważnie słonecznie","clear"];
+  if(c===2) return ["Częściowe zachmurzenie","partly"];
+  if(c===3) return ["Pochmurno","cloud"];
+  if(c===45||c===48) return ["Mgła","fog"];
+  if(c>=51&&c<=57) return ["Mżawka","drizzle"];
+  if(c>=61&&c<=67) return [c>=65?"Silny deszcz":c>=63?"Deszcz":"Słaby deszcz","rain"];
+  if(c>=71&&c<=77) return ["Śnieg","snow"];
+  if(c>=80&&c<=82) return ["Przelotne opady","showers"];
+  if(c>=95) return ["Burza","storm"];
+  return ["—","cloud"];
+}
+function wIcon(code,isDay=1){
+  const k = wmo(code)[1];
+  const sun = isDay ? `<g class="sun"><circle cx="16" cy="16" r="6"/><g stroke-width="2" stroke-linecap="round"><path d="M16 4v3M16 25v3M4 16h3M25 16h3M7.5 7.5l2 2M22.5 22.5l2 2M7.5 24.5l2-2M22.5 9.5l2-2"/></g></g>`
+                    : `<path class="moon" d="M20 6a10 10 0 1 0 6 16A8 8 0 0 1 20 6z"/>`;
+  const smallSun = isDay ? `<g class="sun"><circle cx="11" cy="11" r="5"/><g stroke-width="2" stroke-linecap="round"><path d="M11 2v2M2 11h2M4.6 4.6l1.4 1.4M17.4 4.6 16 6"/></g></g>` : `<path class="moon" d="M13 3a7 7 0 1 0 4 12A6 6 0 0 1 13 3z"/>`;
+  const cloud = (y=0)=>`<path class="cloud" stroke-width="1.6" d="M10 ${24+y}h13a5 5 0 0 0 .5-9.97A7 7 0 0 0 10.2 15 4.5 4.5 0 0 0 10 ${24+y}z"/>`;
+  const drops = n=>`<g class="rain" stroke-width="2" stroke-linecap="round">${n===1?'<path d="M14 27l-1 3M20 27l-1 3"/>':'<path d="M12 27l-1.5 3.5M17 27l-1.5 3.5M22 27l-1.5 3.5"/>'}</g>`;
+  let g="";
+  switch(k){
+    case"clear":g=sun;break;
+    case"partly":g=smallSun+cloud(2);break;
+    case"cloud":g=cloud(0);break;
+    case"fog":g=`<g class="fog" stroke-width="2" stroke-linecap="round"><path d="M6 12h20M4 17h24M7 22h18M10 27h12"/></g>`;break;
+    case"drizzle":g=cloud(-3)+drops(1);break;
+    case"rain":g=cloud(-3)+drops(3);break;
+    case"showers":g=smallSun+cloud(-1)+drops(1);break;
+    case"snow":g=cloud(-3)+`<g class="rain"><circle cx="13" cy="28" r="1.4"/><circle cx="19" cy="29" r="1.4"/></g>`;break;
+    case"storm":g=cloud(-3)+`<path class="bolt" d="M17 22l-4 6h4l-2 4 6-7h-4l2-3z"/>`;break;
+  }
+  return `<svg class="wi" viewBox="0 0 32 32" aria-hidden="true">${g}</svg>`;
+}
+
+/* ---------- weather data ---------- */
+/*WXVARS-START*/const WX_CURRENT="temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,cloud_cover,relative_humidity_2m,is_day", WX_HOURLY="temperature_2m,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,is_day", WX_DAILY="weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,wind_direction_10m_dominant";/*WXVARS-END*/
+let WX = SNAPSHOT, WX_LIVE = false, WX_TIME = SNAPSHOT ? new Date(SNAPSHOT.fetched) : null;
+async function loadLive(){
+  const R = REGIONS, coast = R.filter(r=>r.coast);
+  const q = k => R.map(r=>r[k]).join(",");
+  const u1 = `https://api.open-meteo.com/v1/forecast?latitude=${q("lat")}&longitude=${q("lon")}&elevation=${q("elev")}&current=${WX_CURRENT}&hourly=${WX_HOURLY}&daily=${WX_DAILY}&timezone=Atlantic%2FMadeira&forecast_days=4`;
+  const u2 = `https://marine-api.open-meteo.com/v1/marine?latitude=${coast.map(r=>r.lat)}&longitude=${coast.map(r=>r.lon)}&current=wave_height&daily=wave_height_max&timezone=Atlantic%2FMadeira&forecast_days=4`;
+  const ctl = new AbortController(); setTimeout(()=>ctl.abort(),8000);
+  const [a,b] = await Promise.all([fetch(u1,{signal:ctl.signal}).then(r=>r.json()), fetch(u2,{signal:ctl.signal}).then(r=>r.json()).catch(()=>null)]);
+  const arr = Array.isArray(a)?a:[a]; const sea = b ? (Array.isArray(b)?b:[b]) : [];
+  WX = {fetched:new Date().toISOString(), wx:Object.fromEntries(R.map((r,i)=>[r.id,{current:arr[i].current,hourly:arr[i].hourly,daily:arr[i].daily}])), sea:Object.fromEntries(coast.map((r,i)=>[r.id,sea[i]?{current:sea[i].current,daily:sea[i].daily}:null]))};
+  WX_LIVE = true; WX_TIME = new Date();
+}
+function regionWx(id){return WX?.wx?.[id]||null}
+function dailyFor(id,iso){const w=regionWx(id);if(!w?.daily)return null;const i=w.daily.time.indexOf(iso);if(i<0)return null;const d=w.daily;return {code:d.weather_code[i],max:d.temperature_2m_max[i],min:d.temperature_2m_min[i],pp:d.precipitation_probability_max[i],ps:d.precipitation_sum[i],gust:d.wind_gusts_10m_max[i]}}
+function seaFor(id,iso){const s=WX?.sea?.[id];if(!s)return null;if(!iso)return s.current?.wave_height??null;const i=s.daily?.time?.indexOf(iso);return i>=0?s.daily.wave_height_max[i]:null}
+function alerts(r,d,wave){
+  const out=[];
+  if(!d) return out;
+  if(d.gust>=70) out.push(["stop",`Porywy ${Math.round(d.gust)} km/h`]);
+  else if(d.gust>=50) out.push(["warn",`Porywy ${Math.round(d.gust)} km/h`]);
+  if(d.pp>=70) out.push(["warn",`Deszcz ${d.pp}%`]);
+  if(d.code===45||d.code===48) out.push(["warn","Mgła"]);
+  if(r?.mtn && d.min!=null && d.min<=6) out.push(["view",`Zimno: ${Math.round(d.min)}°C`]);
+  if(wave!=null && wave>=2.5) out.push(["stop",`Fala ${wave.toFixed(1)} m`]);
+  else if(wave!=null && wave>=1.8) out.push(["warn",`Fala ${wave.toFixed(1)} m`]);
+  return out;
+}
+const wxStamp = () => WX_TIME ? new Intl.DateTimeFormat("pl-PL",{timeZone:TZ,day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).format(WX_TIME) : "—";
+
+/* ---------- state ---------- */
+const NOW = madeiraNow();
+const tripIdx = DAYS.findIndex(d=>d.date===NOW.date);
+let tab = "plan", dayId = tripIdx>=0 ? DAYS[tripIdx].id : store.get("md26-day","d1");
+const done = new Set(store.get("md26-done",[]));
+{
+  const h = location.hash.slice(1);
+  if(/^d[1-6]$/.test(h)) dayId=h; else if(["plan","pogoda","kamery","szlaki","slonce"].includes(h)) tab=h;
+}
+
+/* ---------- hero status ---------- */
+function renderStatus(){
+  const first = DAYS[0].date, last = DAYS[DAYS.length-1].date;
+  const el = $("#status");
+  const s = sunFor(NOW.date);
+  const sunLine = s ? `Dziś na Maderze: wschód <b>${fmtT(s.sunrise)}</b> · zachód <b>${fmtT(s.sunset)}</b>` : "";
+  if(NOW.date < first){
+    const n = daysBetween(NOW.date, first);
+    el.innerHTML = `<div class="big mono">${n}</div><div class="lbl"><b>${n===1?"dzień":"dni"} do wylotu</b><br>${sunLine}</div>`;
+  } else if(NOW.date <= last){
+    const i = tripIdx+1;
+    el.innerHTML = `<div class="big mono">${i}/6</div><div class="lbl"><b>Dzień ${i} · ${esc(DAYS[tripIdx].place)}</b><br>${sunLine}</div>`;
+  } else {
+    el.innerHTML = `<div class="big">✓</div><div class="lbl"><b>Wyjazd zakończony</b><br>Plan zostaje jako pamiątka.</div>`;
+  }
+}
+
+/* ---------- contour canvas (hero flourish) ---------- */
+function drawContours(){
+  const c = $("#contours"); if(!c) return;
+  const r = c.getBoundingClientRect(), dpr = Math.min(2,devicePixelRatio||1);
+  c.width = r.width*dpr; c.height = r.height*dpr;
+  const x = c.getContext("2d"); x.scale(dpr,dpr);
+  const W=r.width,H=r.height, cx=W*0.78, cy=H*0.55;
+  x.lineWidth=1;
+  for(let k=1;k<=16;k++){
+    const base = k*Math.max(W,H)/26;
+    x.beginPath();
+    for(let a=0;a<=Math.PI*2+0.01;a+=0.04){
+      const rr = base*(1+0.18*Math.sin(3*a+k*0.4)+0.09*Math.sin(5*a-k*0.7)+0.05*Math.cos(9*a+k));
+      const px = cx+Math.cos(a)*rr*1.9, py = cy+Math.sin(a)*rr*0.75;
+      a===0?x.moveTo(px,py):x.lineTo(px,py);
+    }
+    x.strokeStyle = k===5 ? "rgba(217,100,30,.55)" : `rgba(160,190,175,${0.22-k*0.009})`;
+    x.stroke();
+  }
+}
+
+/* ---------- PLAN view ---------- */
+function daylightSvg(day, stops){
+  const s = sunFor(day.date); if(!s) return "";
+  const A=5*60, B=23*60, W=1000, X=m=>Math.max(0,Math.min(W,(m-A)/(B-A)*W));
+  const dawn=minOf(s.dawn), rise=minOf(s.sunrise), gEnd=minOf(s.goldenHourEnd), gStart=minOf(s.goldenHour), set=minOf(s.sunset), dusk=minOf(s.dusk);
+  let marks="";
+  stops.forEach(st=>{const m=toMin(st.t); if(m==null) return; const cls=["dl-stop",st.cat==="trek"?"trek":"",done.has(st.i)?"done":""].join(" "); marks+=`<circle class="${cls}" cx="${X(m)}" cy="22" r="6"><title>${esc(st.t)} ${esc(st.name)}</title></circle>`;});
+  let now="";
+  if(NOW.date===day.date && NOW.min>A && NOW.min<B) now=`<line class="dl-now" x1="${X(NOW.min)}" x2="${X(NOW.min)}" y1="2" y2="42"/><text class="dl-now-l" x="${X(NOW.min)}" y="-4" text-anchor="middle">teraz ${NOW.hm}</text>`;
+  const ticks=[6,9,12,15,18,21].map(h=>`<text class="dl-tick" x="${X(h*60)}" y="62" text-anchor="middle">${h}:00</text>`).join("");
+  return `<svg viewBox="0 -12 1000 80" role="img" aria-label="Pora dnia: świt ${fmtT(s.dawn)}, wschód ${fmtT(s.sunrise)}, zachód ${fmtT(s.sunset)}, zmrok ${fmtT(s.dusk)}">
+    <rect class="dl-night" x="0" y="12" width="1000" height="20" rx="10"/>
+    <rect class="dl-tw" x="${X(dawn)}" y="12" width="${X(dusk)-X(dawn)}" height="20"/>
+    <rect class="dl-day" x="${X(rise)}" y="12" width="${X(set)-X(rise)}" height="20"/>
+    <rect class="dl-gold" x="${X(rise)}" y="12" width="${X(gEnd)-X(rise)}" height="20"/>
+    <rect class="dl-gold" x="${X(gStart)}" y="12" width="${X(set)-X(gStart)}" height="20"/>
+    ${marks}${now}
+    <text class="dl-tick" x="${X(rise)}" y="48" text-anchor="middle">↑${fmtT(s.sunrise)}</text>
+    <text class="dl-tick" x="${X(set)}" y="48" text-anchor="middle">↓${fmtT(s.sunset)}</text>
+    ${ticks}</svg>`;
+}
+
+function stopHtml(st, nextI){
+  const isAlt = !!st.alt, isDone = done.has(st.i);
+  const chips = [];
+  chips.push(`<span class="chip ${st.cat==="trek"?"trek":st.cat==="view"?"view":""}">${esc(st.kind)}</span>`);
+  if(st.pr) chips.push(`<a class="chip trek" href="${SIMPLIFICA}" target="_blank" rel="noopener"><span class="prmark"><i></i><i></i></span>${st.pr} · rezerwacja ↗</a>`);
+  if(st.stop) chips.push(`<span class="chip stop">⛔ ${esc(st.stop)}</span>`);
+  if(st.warn) chips.push(`<span class="chip warn">${esc(st.warn)}</span>`);
+  if(st.alt) chips.push(`<span class="chip">${esc(st.alt)}</span>`);
+  if(st.sun){const s=sunFor(DAYS.find(d=>d.id===st.day).date); if(s) chips.push(`<span class="chip hot">${st.sun==="set"?`zachód ${fmtT(s.sunset)} · zmrok ${fmtT(s.dusk)}`:`świt ${fmtT(s.dawn)} · wschód ${fmtT(s.sunrise)}`}</span>`);}
+  if(st.sea){const w=seaFor(st.sea, DAYS.find(d=>d.id===st.day).date) ?? null; if(w!=null) chips.push(`<span class="chip ${w>=2.5?"stop":w>=1.8?"warn":"view"}">fala ${w.toFixed(1)} m</span>`);}
+  if(st.wx){const d=dailyFor(st.wx, DAYS.find(x=>x.id===st.day).date); if(d) chips.push(`<span class="chip view">${Math.round(d.min)}–${Math.round(d.max)}°C · ${d.pp}% deszczu</span>`);}
+  chips.push(`<a class="chip" href="${mapsUrl(st.loc)}" target="_blank" rel="noopener">Mapa ↗</a>`);
+  if(st.cam) chips.push(`<a class="chip" href="${camUrl(st.cam)}" target="_blank" rel="noopener">● Kamera ↗</a>`);
+  const tm = toMin(st.t)!=null ? `<b>${esc(st.t)}</b>${st.end?esc(st.end):""}` : `<b style="font-size:12.5px">${esc(st.t)}</b>`;
+  return `<li class="stop cat-${st.cat}${isAlt?" is-alt":""}${isDone?" is-done":""}${st.i===nextI?" is-next":""}">
+    <div class="time">${tm}</div><div class="rail"><span class="dot"></span></div>
+    <div class="card">
+      <div class="card-top"><div>${st.i===nextI?'<div class="next-flag">Następne</div>':""}<h4>${esc(st.name)}</h4></div>
+        <input type="checkbox" class="check" id="chk-${st.i}" data-i="${st.i}" ${isDone?"checked":""} aria-label="Zrobione: ${esc(st.name)}"></div>
+      ${st.desc?`<p>${esc(st.desc)}</p>`:""}
+      <div class="chips">${chips.join("")}</div>
+    </div></li>`;
+}
+
+function routeUrl(stops){
+  const pts = stops.filter(s=>!s.alt && !s.stop && s.cat!=="base" || s===stops[0] || s===stops[stops.length-1]).map(s=>s.loc);
+  const uniq = pts.filter((p,i)=>p!==pts[i-1]);
+  if(uniq.length<2) return null;
+  const o=uniq[0], d=uniq[uniq.length-1], w=uniq.slice(1,-1).slice(0,8);
+  const fx = p=>/^-?\d/.test(p)?p:p+", Madeira";
+  return "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+encodeURIComponent(fx(o))+"&destination="+encodeURIComponent(fx(d))+(w.length?"&waypoints="+encodeURIComponent(w.map(fx).join("|")):"");
+}
+
+function renderPlan(){
+  const day = DAYS.find(d=>d.id===dayId), idx = DAYS.indexOf(day);
+  const stops = STOPS.filter(s=>s.day===dayId);
+  let nextI = -1;
+  if(NOW.date===day.date){const n=stops.find(s=>!s.alt&&!s.stop&&!done.has(s.i)&&toMin(s.end||s.t)!=null&&toMin(s.end||s.t)>=NOW.min); nextI=n?n.i:-1;}
+  const s = sunFor(day.date);
+  const pills = DAYS.map((d,i)=>`<button class="day-pill" aria-pressed="${d.id===dayId}" data-day="${d.id}">
+      ${NOW.date===d.date?'<span class="today">dziś</span>':""}
+      <span class="dow">${d.dow} · dzień ${i+1}</span><span class="dnum mono">${plDate(d.date,{day:"numeric",month:"numeric"})}</span><span class="dplace">${esc(d.place)}</span></button>`).join("");
+  const doneN = stops.filter(x=>done.has(x.i)).length;
+  const route = routeUrl(stops);
+
+  const wxRows = day.regions.map(id=>{
+    const r = REGIONS.find(x=>x.id===id), w = regionWx(id);
+    const d = dailyFor(id, day.date);
+    const wave = r.coast ? seaFor(id, d?day.date:null) : null;
+    let main, det;
+    if(d){
+      main = `${wIcon(d.code,1)}<span>${Math.round(d.max)}°</span>`;
+      det = `<span>${wmo(d.code)[0]}</span><span>${Math.round(d.min)}–${Math.round(d.max)}°C</span><span>deszcz ${d.pp}%</span><span>porywy ${Math.round(d.gust)} km/h</span>${wave!=null?`<span>fala ${wave.toFixed(1)} m</span>`:""}`;
+    } else if(w?.current){
+      const c=w.current;
+      main = `${wIcon(c.weather_code,c.is_day)}<span>${Math.round(c.temperature_2m)}°</span>`;
+      det = `<span>teraz: ${wmo(c.weather_code)[0]}</span><span>wiatr ${Math.round(c.wind_speed_10m)} (porywy ${Math.round(c.wind_gusts_10m)}) km/h</span>${wave!=null?`<span>fala ${wave.toFixed(1)} m</span>`:""}`;
+    } else { main = "—"; det = "<span>brak danych</span>"; }
+    const al = alerts(r,d,wave).map(([k,t])=>`<span class="chip ${k}">${t}</span>`).join("");
+    const mini = w?.hourly && hIdx(w.hourly, day.date+"T06:00", day.date+"T22:00").length>4 ? `<div class="chart mini" data-chart="${id}" data-from="${day.date}T06:00" data-to="${day.date}T22:00" data-compact="1"></div>` : "";
+    return `<div class="wx-row"><div class="nm">${esc(r.name)} <small>${r.elev} m</small></div><div class="now">${main}</div><div class="det">${det}</div>${al?`<div class="chips" style="grid-column:1/-1">${al}</div>`:""}${mini}</div>`;
+  }).join("");
+  const hasForecast = day.regions.some(id=>dailyFor(id,day.date));
+  const wxNote = hasForecast ? `prognoza na ${plDate(day.date,{day:"numeric",month:"short"})}` : `teraz · prognoza ${daysBetween(NOW.date,day.date)>3?"pojawi się 3 dni wcześniej":"niedostępna"}`;
+
+  const food = FOOD[dayId]||[];
+  const foodHtml = food.length ? `<div class="panel"><h3>Gdzie zjeść po południu <small>sprawdź godziny</small></h3><div class="food">${food.map(f=>`<a class="f" href="${mapsUrl(f.q)}" target="_blank" rel="noopener"><small>${esc(f.h)}</small><b>${esc(f.n)} ↗</b><span>${esc(f.w)}. ${esc(f.d)}</span></a>`).join("")}</div></div>` : "";
+  const camsHtml = `<div class="panel"><h3>Kamery na trasie <small>na żywo ↗</small></h3><div class="cam-list">${day.cams.map(c=>`<a href="${camUrl(c)}" target="_blank" rel="noopener"><span>● ${esc(CAMS[c][0])}</span><small>${CAMS[c][2]} m ↗</small></a>`).join("")}</div></div>`;
+  const prs = [...new Set(stops.filter(x=>x.pr).map(x=>x.pr))];
+  const prHtml = prs.length ? `<div class="panel"><h3>Bilety na szlaki</h3>${prs.map(p=>{const t=TRAILS.find(x=>x.code===p);return `<div class="chips"><span class="chip trek"><span class="prmark"><i></i><i></i></span>${p}</span><span class="chip">slot ${t.slot}</span><span class="chip">${t.fee}/os.</span></div>`}).join("")}<a class="btn primary" href="${SIMPLIFICA}" target="_blank" rel="noopener">Zarezerwuj w SIMplifica ↗</a></div>` : "";
+
+  $("#view-plan").innerHTML = `
+    <div class="days" role="group" aria-label="Dni wyjazdu">${pills}</div>
+    <div class="day-head">
+      <div class="eyebrow">${plDate(day.date,{weekday:"long",day:"numeric",month:"long"})} · dzień ${idx+1} z 6</div>
+      <h2>${esc(day.title)}</h2>
+      <div class="sub"><span>Nocleg: <b>${esc(day.base)}</b></span><span class="mono">${doneN}/${stops.length} odhaczone</span>${route?`<a class="btn" href="${route}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8 17h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h5"/></svg>Trasa dnia w Mapach</a>`:""}</div>
+    </div>
+    ${s?`<div class="daylight"><div class="facts">
+      <span>Świt <b>${fmtT(s.dawn)}</b></span><span>Wschód <b>${fmtT(s.sunrise)}</b></span><span>Zachód <b>${fmtT(s.sunset)}</b></span><span>Zmrok <b>${fmtT(s.dusk)}</b></span><span>Dzień <b>${Math.floor(s.len/60)} h ${Math.round(s.len%60)} min</b></span></div>${daylightSvg(day,stops)}</div>`:""}
+    <div class="day-grid">
+      <ol class="timeline">${stops.map(st=>stopHtml(st,nextI)).join("")}</ol>
+      <aside class="side">
+        <div class="panel"><h3>Pogoda na trasie <small>${wxNote}</small></h3><div class="wx-mini">${wxRows}</div>
+          <div class="wx-src"><span class="live ${WX_LIVE?"on":""}"><i></i>${WX_LIVE?"na żywo":"zapis"} · ${wxStamp()}</span><a href="#pogoda" data-goto="pogoda">Wszystkie regiony →</a></div></div>
+        ${prHtml}${foodHtml}${camsHtml}
+      </aside>
+    </div>`;
+  const sel = $(".day-pill[aria-pressed='true']"), rail = $(".days");
+  if(sel && rail.scrollWidth>rail.clientWidth) rail.scrollLeft = sel.offsetLeft - (rail.clientWidth-sel.offsetWidth)/2;
+}
+
+/* ---------- POGODA view ---------- */
+let wxRegion = null;
+const DIRS = ["N","NE","E","SE","S","SW","W","NW"];
+const dirName = d => d==null ? "" : DIRS[Math.round(d/45)%8];
+const arrow = (d,cls="",size=16) => d==null ? "" : `<svg class="warrow ${cls}" width="${size}" height="${size}" viewBox="-8 -8 16 16" aria-hidden="true"><path transform="rotate(${(d+180)%360})" d="M0,-7 L4.5,5 L0,2 L-4.5,5 Z"/></svg>`;
+const gustCls = g => g>=70?"stop":g>=50?"warn":"";
+const nowHourIso = () => {const n=madeiraNow();return `${n.date}T${String(Math.floor(n.min/60)).padStart(2,"0")}:00`};
+function hIdx(h,from,to){const o=[];if(!h?.time)return o;h.time.forEach((t,i)=>{if(t>=from&&t<to)o.push(i)});return o}
+const hourLbl = t => t.slice(11,13);
+function niceMax(v,step){return Math.max(step,Math.ceil(v/step)*step)}
+
+/* Three aligned strips sharing one time axis: temperature, precipitation, wind. No dual axes. */
+function chartSvg(h, idx, W, compact){
+  const n = idx.length, padL = 30, padR = 8, cw = (W-padL-padR)/n, X = k => padL + k*cw + cw/2;
+  const T = idx.map(i=>h.temperature_2m[i]), P = idx.map(i=>h.precipitation[i]||0), PP = idx.map(i=>h.precipitation_probability?.[i]??0);
+  const WS = idx.map(i=>h.wind_speed_10m[i]), WG = idx.map(i=>h.wind_gusts_10m[i]), WD = idx.map(i=>h.wind_direction_10m[i]);
+  const L = compact
+    ? {day:0, t:[6,46], p:[58,84], w:null, ax:98, H:104}
+    : {day:16, t:[44,140], p:[176,232], w:[268,348], arr:364, ax:390, H:398};
+  let g = "";
+  // night bands
+  let s=-1; idx.forEach((i,k)=>{const night=h.is_day&&h.is_day[i]===0; if(night&&s<0)s=k; if((!night||k===n-1)&&s>=0){const e=night?k+1:k; g+=`<rect class="c-night" x="${padL+s*cw}" y="${L.day?L.day+4:0}" width="${(e-s)*cw}" height="${L.ax-14-(L.day?L.day+4:0)}"/>`; s=-1;}});
+  // midnight separators + day labels
+  const firstMid = idx.findIndex(i=>h.time[i].endsWith("T00:00"));
+  idx.forEach((i,k)=>{const t=h.time[i]; if(t.endsWith("T00:00")||(k===0&&(firstMid<0||firstMid*cw>150))){ if(k>0) g+=`<line class="c-mid" x1="${padL+k*cw}" x2="${padL+k*cw}" y1="${L.day?L.day+4:0}" y2="${L.ax-14}"/>`; if(!compact) g+=`<text class="c-day" x="${padL+k*cw+4}" y="${L.day}">${k===0?"teraz · ":""}${plDate(t.slice(0,10),{weekday:"short",day:"numeric",month:"numeric"})}</text>`;}});
+  // temperature strip
+  const tMin = Math.floor(Math.min(...T)-1), tMax = Math.ceil(Math.max(...T)+1), [t0,t1]=L.t, Yt = v => t1-(v-tMin)/(tMax-tMin)*(t1-t0);
+  const tTicks = compact ? [] : [tMin, Math.round((tMin+tMax)/2), tMax];
+  tTicks.forEach(v=>{g+=`<line class="c-grid" x1="${padL}" x2="${W-padR}" y1="${Yt(v)}" y2="${Yt(v)}"/><text class="c-yl" x="${padL-6}" y="${Yt(v)+3}" text-anchor="end">${v}°</text>`});
+  const tl = T.map((v,k)=>`${X(k).toFixed(1)},${Yt(v).toFixed(1)}`).join(" ");
+  g += `<polygon class="c-tarea" points="${X(0)},${t1} ${tl} ${X(n-1)},${t1}"/><polyline class="c-tline" points="${tl}"/>`;
+  // label the warmest hour of each day (selective direct labels)
+  const byDay = {}; idx.forEach((i,k)=>{const d=h.time[i].slice(0,10); if(!byDay[d]||T[k]>T[byDay[d]]) byDay[d]=k;});
+  Object.values(byDay).forEach(k=>{ if(k<1||k>n-2) return; g+=`<circle class="c-tdot" cx="${X(k)}" cy="${Yt(T[k])}" r="3.5"/><text class="c-val" x="${X(k)}" y="${Yt(T[k])-8}" text-anchor="middle">${Math.round(T[k])}°</text>`;});
+  if(!compact) g+=`<text class="c-title" x="${padL}" y="${t0-10}">Temperatura °C</text>`;
+  // precipitation strip
+  const [p0,p1]=L.p, pMax = Math.max(1,Math.ceil(Math.max(...P))), Yp = v => p1-(v/pMax)*(p1-p0);
+  if(!compact){ g+=`<text class="c-title" x="${padL}" y="${p0-10}">Opady mm/h <tspan class="c-sub">· intensywność koloru = szansa opadu</tspan></text>`; [0,pMax].forEach(v=>g+=`<line class="c-grid" x1="${padL}" x2="${W-padR}" y1="${Yp(v)}" y2="${Yp(v)}"/><text class="c-yl" x="${padL-6}" y="${Yp(v)+3}" text-anchor="end">${v}</text>`); }
+  else g+=`<line class="c-grid" x1="${padL}" x2="${W-padR}" y1="${p1}" y2="${p1}"/>`;
+  const bw = Math.max(1, cw-2);
+  P.forEach((v,k)=>{ if(v<=0) return; const y=Yp(v), hgt=Math.max(2,p1-y); g+=`<rect class="c-rain" x="${X(k)-bw/2}" y="${p1-hgt}" width="${bw}" height="${hgt}" rx="${Math.min(2,bw/2)}" style="opacity:${(0.35+0.65*PP[k]/100).toFixed(2)}"/>`;});
+  if(P.every(v=>v<=0)) g+=`<text class="c-empty" x="${(padL+W-padR)/2}" y="${(p0+p1)/2+4}" text-anchor="middle">bez opadów</text>`;
+  // wind strip
+  if(L.w){
+    const [w0,w1]=L.w, wMax = niceMax(Math.max(40,...WG),10), Yw = v => w1-(v/wMax)*(w1-w0);
+    g+=`<text class="c-title" x="${padL}" y="${w0-10}">Wiatr km/h <tspan class="c-sub">· linia ciągła średni, przerywana porywy · strzałka = kierunek</tspan></text>`;
+    [0,wMax/2,wMax].forEach(v=>g+=`<line class="c-grid" x1="${padL}" x2="${W-padR}" y1="${Yw(v)}" y2="${Yw(v)}"/><text class="c-yl" x="${padL-6}" y="${Yw(v)+3}" text-anchor="end">${v}</text>`);
+    if(wMax>=50) g+=`<line class="c-thr" x1="${padL}" x2="${W-padR}" y1="${Yw(50)}" y2="${Yw(50)}"/><text class="c-thr-l" x="${W-padR-4}" y="${Yw(50)-4}" text-anchor="end">50: silny w górach</text>`;
+    g+=`<polyline class="c-gust" points="${WG.map((v,k)=>`${X(k).toFixed(1)},${Yw(v).toFixed(1)}`).join(" ")}"/><polyline class="c-wind" points="${WS.map((v,k)=>`${X(k).toFixed(1)},${Yw(v).toFixed(1)}`).join(" ")}"/>`;
+    const every = cw>=22?1:cw>=11?2:3;
+    idx.forEach((i,k)=>{ if(+h.time[i].slice(11,13)%every) return; g+=`<g transform="translate(${X(k)},${L.arr})" class="c-arr ${gustCls(WG[k])}"><path transform="rotate(${(WD[k]+180)%360})" d="M0,-6 L4,5 L0,2 L-4,5 Z"/></g>`;});
+  }
+  // x axis hour labels
+  const lab = cw>=26?1:cw>=13?3:cw>=6?6:12;
+  idx.forEach((i,k)=>{const hh=+h.time[i].slice(11,13); if(hh%lab===0) g+=`<text class="c-xl" x="${X(k)}" y="${L.ax}" text-anchor="middle">${hh}</text>`;});
+  g += `<line class="c-cross" x1="0" x2="0" y1="${L.day?L.day+4:0}" y2="${L.ax-14}" visibility="hidden"/>`;
+  g += `<rect class="c-hit" x="${padL}" y="0" width="${W-padL-padR}" height="${L.H}"/>`;
+  return {svg:`<svg width="${W}" height="${L.H}" viewBox="0 0 ${W} ${L.H}" role="img" aria-label="Prognoza godzinowa: temperatura, opady i wiatr">${g}</svg>`, padL, cw, n};
+}
+
+function drawCharts(){
+  document.querySelectorAll("[data-chart]").forEach(box=>{
+    const h = regionWx(box.dataset.chart)?.hourly; if(!h) return;
+    const idx = hIdx(h, box.dataset.from, box.dataset.to); if(idx.length<2){box.hidden=true;return;}
+    const compact = box.dataset.compact==="1";
+    const W = compact ? box.clientWidth : Math.max(box.clientWidth, idx.length*(innerWidth<600?11:9));
+    const c = chartSvg(h, idx, W, compact);
+    box.innerHTML = `<div class="c-scroll">${c.svg}<div class="c-tip" hidden></div></div>`;
+    const svg = box.querySelector("svg"), tip = box.querySelector(".c-tip"), cross = svg.querySelector(".c-cross");
+    const show = ev => {
+      const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * (W / r.width);
+      const k = Math.max(0, Math.min(c.n-1, Math.floor((x - c.padL)/c.cw))), i = idx[k], cx = c.padL + k*c.cw + c.cw/2;
+      cross.setAttribute("x1",cx); cross.setAttribute("x2",cx); cross.setAttribute("visibility","visible");
+      const t = h.time[i];
+      tip.innerHTML = `<div class="tt-h">${plDate(t.slice(0,10),{weekday:"short",day:"numeric",month:"numeric"})}, ${t.slice(11)}</div>
+        <div class="tt-r">${wIcon(h.weather_code[i],h.is_day?.[i]??1)}<b>${Math.round(h.temperature_2m[i])}°</b><span>${wmo(h.weather_code[i])[0]}</span></div>
+        <div class="tt-l"><span class="sw rain"></span>Opady <b>${(h.precipitation[i]||0).toFixed(1)} mm</b> · ${h.precipitation_probability?.[i]??0}%</div>
+        <div class="tt-l"><span class="sw wind"></span>Wiatr <b>${Math.round(h.wind_speed_10m[i])}</b> z ${dirName(h.wind_direction_10m[i])} ${arrow(h.wind_direction_10m[i],"",13)} · porywy <b>${Math.round(h.wind_gusts_10m[i])}</b> km/h</div>
+        ${h.cloud_cover?`<div class="tt-l"><span class="sw cloud"></span>Zachmurzenie <b>${h.cloud_cover[i]}%</b></div>`:""}`;
+      tip.hidden = false;
+      const left = cx / W * r.width, tw = tip.offsetWidth;
+      tip.style.left = Math.max(4, Math.min(r.width - tw - 4, left + 14 > r.width - tw ? left - tw - 14 : left + 14)) + "px";
+    };
+    const hide = () => {tip.hidden = true; cross.setAttribute("visibility","hidden")};
+    svg.addEventListener("pointermove", show); svg.addEventListener("pointerdown", show); svg.addEventListener("pointerleave", hide);
+  });
+}
+
+function sparkline(h, from, to){
+  const idx = hIdx(h, from, to); if(idx.length<2) return "";
+  const T = idx.map(i=>h.temperature_2m[i]), mn=Math.min(...T), mx=Math.max(...T), W=84, H=26;
+  const pts = T.map((v,k)=>`${(k/(T.length-1)*(W-4)+2).toFixed(1)},${(H-3-(v-mn)/Math.max(1,mx-mn)*(H-6)).toFixed(1)}`);
+  const last = pts[pts.length-1].split(",");
+  return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts.join(" ")}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.5"/></svg>`;
+}
+function sum(h,idx,k){return idx.reduce((a,i)=>a+(h[k][i]||0),0)}
+function maxOf(h,idx,k){return idx.reduce((a,i)=>Math.max(a,h[k][i]??0),0)}
+
+function renderWeather(){
+  const day = DAYS.find(d=>d.id===dayId);
+  if(!wxRegion || !REGIONS.some(r=>r.id===wxRegion)) wxRegion = day.regions[0];
+  const rel = new Set(day.regions), tripDates = new Set(DAYS.map(d=>d.date));
+  const from = nowHourIso(), plus = hrs => {const d=new Date(from+":00Z"); d.setUTCHours(d.getUTCHours()+hrs); return d.toISOString().slice(0,16)};
+  const r = REGIONS.find(x=>x.id===wxRegion), w = regionWx(r.id);
+  const head = `<div class="sec-head"><div><div class="eyebrow">11 regionów · godzina po godzinie · 3 dni do przodu</div><h2>Pogoda na Maderze</h2>
+      <p>Madera ma wiele mikroklimatów: na południu może świecić słońce, a na Pico do Areeiro w tym samym czasie wisi chmura. Wybierz region i przesuń palcem po wykresie, żeby zobaczyć dowolną godzinę.</p></div>
+      <div class="wx-src" style="justify-content:flex-end"><span class="live ${WX_LIVE?"on":""}"><i></i>${WX_LIVE?"Na żywo, odświeżane co 15 min":"Zapis danych"} · ${wxStamp()}</span><button class="btn" id="wx-refresh">Odśwież</button></div></div>`;
+  if(!w){ $("#view-pogoda").innerHTML = head+`<div class="panel"><p class="note">Brak danych pogodowych. Spróbuj „Odśwież” albo otwórz Windy.</p></div>`; return; }
+  const c = w.current, d = w.daily, h = w.hourly;
+  const wave = r.coast ? seaFor(r.id) : null;
+  const next24 = h ? hIdx(h, from, plus(24)) : [];
+  const today = {code:d.weather_code[0],min:d.temperature_2m_min[0],max:d.temperature_2m_max[0],pp:d.precipitation_probability_max[0],gust:d.wind_gusts_10m_max[0]};
+  const al = alerts(r,today,wave).map(([k,t])=>`<span class="chip ${k}">${t}</span>`).join("");
+  const picker = `<div class="wx-pick" role="group" aria-label="Region">${REGIONS.map(x=>`<button class="wx-chip${x.id===wxRegion?" on":""}${rel.has(x.id)?" rel":""}" data-region="${x.id}">${esc(x.name)}${x.mtn?' <small>▲</small>':""}</button>`).join("")}</div>`;
+  const now = `<div class="wx-hero">
+      <div class="wx-hero-main">${wIcon(c.weather_code,c.is_day)}<div><div class="t mono">${Math.round(c.temperature_2m)}°</div><div class="d"><b>${wmo(c.weather_code)[0]}</b> · odczuwalna ${Math.round(c.apparent_temperature)}°</div></div></div>
+      <dl class="wx-stats">
+        <div><dt>Wiatr</dt><dd>${arrow(c.wind_direction_10m??h?.wind_direction_10m?.[next24[0]],gustCls(c.wind_gusts_10m),18)}${Math.round(c.wind_speed_10m)} <small>km/h z ${dirName(c.wind_direction_10m??h?.wind_direction_10m?.[next24[0]])}</small></dd></div>
+        <div><dt>Porywy</dt><dd class="${gustCls(c.wind_gusts_10m)}">${Math.round(c.wind_gusts_10m)} <small>km/h</small></dd></div>
+        <div><dt>Opady 24 h</dt><dd>${h?sum(h,next24,"precipitation").toFixed(1):"—"} <small>mm · max ${h?maxOf(h,next24,"precipitation_probability"):"—"}%</small></dd></div>
+        <div><dt>Wilgotność</dt><dd>${c.relative_humidity_2m}<small>%</small></dd></div>
+        <div><dt>Chmury</dt><dd>${c.cloud_cover}<small>%</small></dd></div>
+        ${wave!=null?`<div><dt>Fala</dt><dd>${wave.toFixed(1)} <small>m</small></dd></div>`:""}
+      </dl></div>`;
+  const days = d.time.map((t,i)=>`<div class="wx-day${tripDates.has(t)?" trip":""}"><span class="wd">${i===0?"dziś":plDate(t,{weekday:"short",day:"numeric"})}</span>${wIcon(d.weather_code[i],1)}<span class="tt">${Math.round(d.temperature_2m_max[i])}°<span>/${Math.round(d.temperature_2m_min[i])}°</span></span><span class="pp">${(d.precipitation_sum[i]||0).toFixed(1)} mm · ${d.precipitation_probability_max[i]}%</span><span class="gg ${gustCls(d.wind_gusts_10m_max[i])}">${arrow(d.wind_direction_10m_dominant?.[i],"",12)} ${Math.round(d.wind_gusts_10m_max[i])} km/h</span></div>`).join("");
+  const compare = REGIONS.map(x=>{
+    const ww = regionWx(x.id); if(!ww) return "";
+    const hh = ww.hourly, ix = hh ? hIdx(hh, from, plus(24)) : [], cc = ww.current;
+    const g = hh ? maxOf(hh,ix,"wind_gusts_10m") : ww.daily.wind_gusts_10m_max[0];
+    return `<button class="cmp${x.id===wxRegion?" on":""}${rel.has(x.id)?" rel":""}" data-region="${x.id}">
+      <span class="cmp-n"><b>${esc(x.name)}</b><small>${x.elev} m${rel.has(x.id)?" · dzień "+dayId.slice(1):""}</small></span>
+      <span class="cmp-now">${wIcon(cc.weather_code,cc.is_day)}<b class="mono">${Math.round(cc.temperature_2m)}°</b></span>
+      <span class="cmp-sp">${hh?sparkline(hh,from,plus(24)):""}</span>
+      <span class="cmp-m mono"><span title="opady w 24 h">☂ ${hh?sum(hh,ix,"precipitation").toFixed(1):"—"} mm</span><span class="${gustCls(g)}" title="maks. porywy w 24 h">≋ ${Math.round(g)} km/h</span></span></button>`;
+  }).join("");
+  $("#view-pogoda").innerHTML = `${head}${picker}
+    <article class="wx-detail panel">
+      <header class="wx-detail-h"><div><h3 style="font-size:24px">${esc(r.name)}</h3><div class="tag">${r.elev} m n.p.m. · ${esc(r.note)}</div></div>
+        <div class="chips">${r.mtn?'<span class="chip trek">góry</span>':r.coast?'<span class="chip view">wybrzeże</span>':""}${al}</div></header>
+      ${now}
+      ${h?`<div class="chart" data-chart="${r.id}" data-from="${from}" data-to="9999"></div>
+      <div class="c-legend"><span><i class="sw temp"></i>temperatura</span><span><i class="sw rain"></i>opady (mm/h)</span><span><i class="sw wind"></i>wiatr</span><span><i class="sw gust"></i>porywy</span><span><i class="sw night"></i>noc</span></div>`:""}
+      <div class="wx-days">${days}</div>
+      <div class="chips"><a class="chip" href="https://www.windy.com/${r.lat}/${r.lon}?${r.lat},${r.lon},11" target="_blank" rel="noopener">Windy ↗</a><a class="chip" href="https://www.ipma.pt/pt/otempo/prev.localidade.hora/#Madeira" target="_blank" rel="noopener">IPMA ↗</a><a class="chip" href="#kamery" data-goto="kamery">Kamery ↗</a></div>
+    </article>
+    <div class="panel"><h3>Porównanie regionów <small>teraz i najbliższe 24 h</small></h3><div class="cmp-list">${compare}</div></div>
+    <p class="note">Ostrzeżenia liczone automatycznie: porywy ≥50 km/h, deszcz ≥70%, mgła, fala ≥1,8 m (baseny w Porto Moniz zamykają przy wysokiej fali). W górach wybieraj okna z porywami poniżej 50 km/h. Źródło: Open-Meteo, fala z Open-Meteo Marine.</p>`;
+}
+
+/* ---------- KAMERY view ---------- */
+function renderCams(){
+  const groups = [
+    ["Góry — czy jesteśmy nad chmurami?",["pico-do-arieiro","achada-do-teixeira","rabacal-madeira","eira-do-serrado","funchal-parque-ecologico","portela-porto-da-cruz","santo-da-serra-golf"]],
+    ["Północ i zachód",["porto-moniz","ponta-delgada","seixal","boaventura","sao-jorge","santana-parque-tematico","praia-faial"]],
+    ["Południe i Funchal",["ponta-do-sol","ribeira-brava","camara-de-lobos","camara-de-lobos-baia","funchal-baia-do-funchal","funchal-pontinha","funchal-lido","monte","palheiro-golf"]],
+    ["Wschód",["machico","canical","santa-cruz"]]
+  ];
+  const today = new Set(DAYS.find(d=>d.id===dayId).cams);
+  $("#view-kamery").innerHTML = `
+    <div class="sec-head"><div><div class="eyebrow">${Object.keys(CAMS).length} kamer · NetMadeira</div><h2>Kamery na żywo</h2>
+      <p>Przed wyjazdem na szczyt zerknij na kamerę: biały obraz oznacza, że góra jest w chmurze, a niebieskie niebo nad białym morzem to inwersja, czyli najlepszy moment na wschód. Kamery z planu wybranego dnia są oznaczone.</p></div></div>
+    ${groups.map(([g,list])=>`<div style="display:grid;gap:10px"><h3 style="font-size:18px">${g}</h3><div class="cam-grid">${list.map(k=>{const [n,why,alt]=CAMS[k];return `<a class="cam${alt>=600?" mtn":""}" href="${camUrl(k)}" target="_blank" rel="noopener">
+      <div class="lens"><span class="rec"><i></i>LIVE</span><span class="alt">${alt} m</span></div><b>${esc(n)}</b><span class="why">${esc(why)}</span>
+      <span class="go">${today.has(k)?`<span class="chip hot" style="margin-right:6px">dzień ${dayId.slice(1)}</span>`:""}Otwórz podgląd ↗</span></a>`}).join("")}</div></div>`).join("")}
+    <p class="note">Podgląd otwiera się na stronie NetMadeira; przeglądarka nie pozwala osadzić obrazu z kamery w tej stronie. Więcej kamer (m.in. Pico Ruivo): <a href="https://www.madeira-web.com/en/webcams.html" target="_blank" rel="noopener">Madeira-web ↗</a>, <a href="https://beyondmadeira.com/live-webcams" target="_blank" rel="noopener">BeyondMadeira ↗</a>.</p>`;
+}
+
+/* ---------- SZLAKI view ---------- */
+function renderTrails(){
+  const total = TRAILS.reduce((a,t)=>a+parseFloat(t.fee.replace(",",".")),0);
+  $("#view-szlaki").innerHTML = `
+    <div class="sec-head"><div><div class="eyebrow">Od 1 stycznia 2026 · rezerwacja obowiązkowa</div><h2>Szlaki i bilety SIMplifica</h2>
+      <p>Każdy oznakowany szlak PR na Maderze wymaga imiennej rezerwacji z 30-minutowym oknem wejścia. Bez biletu grozi mandat. Rezerwujesz w rządowym portalu SIMplifica (usługa „Percursos Pedestres”).</p></div></div>
+    <div class="bookbar"><div><b>4 szlaki · ${total.toFixed(2).replace(".",",")} € / osoba</b><div style="opacity:.75;font-size:14px">PR1.2 + PR6 + PR8 po 4,50 € oraz PR1 10,50 €. Karnet 3-dniowy (22,50 €) się nie opłaca i nie obejmuje PR1.</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn primary" href="${SIMPLIFICA}" target="_blank" rel="noopener">Rezerwuj w SIMplifica ↗</a><a class="btn" href="${IFCN}" target="_blank" rel="noopener">Status szlaków IFCN ↗</a></div></div>
+    ${TRAILS.map(t=>{const d=DAYS.find(x=>x.id===t.day);return `<article class="trail">
+      <div><span class="code"><span class="prmark"><i></i><i></i></span>${t.code}</span><h3>${esc(t.name)}</h3>
+        <dl class="facts"><div><dt>Dzień</dt><dd>${d.dow} ${plDate(d.date,{day:"numeric",month:"numeric"})}</dd></div><div><dt>Start</dt><dd>${esc(t.start)}</dd></div><div><dt>Długość</dt><dd>${esc(t.len)}</dd></div><div><dt>Czas</dt><dd>${esc(t.time)}</dd></div><div><dt>Opłata</dt><dd>${esc(t.fee)}</dd></div></dl>
+        <p>${esc(t.note)}</p></div>
+      <div class="act"><span class="slot">sugerowany slot ${t.slot}</span><a class="btn primary" href="${SIMPLIFICA}" target="_blank" rel="noopener">Rezerwuj ${t.code} ↗</a><button class="btn" data-goto-day="${t.day}">Pokaż dzień</button></div></article>`}).join("")}
+    <div class="panel"><h3>Jak zarezerwować</h3><ol class="steps">
+      <li>Wejdź na <b>SIMplifica</b> i załóż konto (wersja angielska jest dostępna).</li>
+      <li>Wybierz usługę <b>Percursos Pedestres</b>, potem szlak po kodzie (np. PR6).</li>
+      <li>Wybierz datę i <b>30-minutowe okno</b> wejścia: niebieskie są wolne, czerwone pełne. Jeden slot na szlak dziennie.</li>
+      <li>Dodaj <b>wszystkich uczestników</b> i zapłać online.</li>
+      <li>Zapisz potwierdzenie (PDF lub zrzut ekranu); strażnicy mogą je sprawdzić przy wejściu.</li></ol>
+      <p class="note">Zwrot lub zmiana terminu jest możliwa tylko wtedy, gdy IFCN zamknie szlak (pogoda, osuwisko). Popularne szlaki (PR1, PR6, PR8) wyprzedają się najszybciej, szczególnie poranne okna 7:00–8:30. Zasady i ceny zmieniały się w 2026, więc sprawdź je w SIMplifica przed zakupem.</p></div>`;
+}
+
+/* ---------- SŁOŃCE view ---------- */
+function renderSun(){
+  const rows = DAYS.map(d=>{
+    const f = sunFor(d.date), a = sunFor(d.date,32.735,-16.928);
+    return `<tr class="${NOW.date===d.date?"cur":""}"><td><b>${d.dow}</b> ${plDate(d.date,{day:"numeric",month:"short"})}</td><td class="mono">${fmtT(f.dawn)}</td><td class="mono"><b>${fmtT(f.sunrise)}</b></td><td class="mono">${fmtT(f.goldenHourEnd)}</td><td class="mono">${fmtT(f.goldenHour)}</td><td class="mono"><b>${fmtT(f.sunset)}</b></td><td class="mono">${fmtT(f.dusk)}</td><td class="mono">${Math.floor(f.len/60)} h ${Math.round(f.len%60)} min</td></tr>`;
+  }).join("");
+  const t = sunFor(NOW.date);
+  const ruivo = sunFor("2026-11-11",32.759,-16.943), areeiro = sunFor("2026-11-13",32.735,-16.928);
+  $("#view-slonce").innerHTML = `
+    <div class="sec-head"><div><div class="eyebrow">Czas Madery (WET, UTC+0 w listopadzie) · 1 h wcześniej niż w Polsce</div><h2>Wschody i zachody słońca</h2>
+      <p>Liczone dla Funchal. W górach (1800 m) słońce wschodzi kilka minut wcześniej i zachodzi kilka minut później, bo horyzont jest niżej.</p></div></div>
+    ${t?`<div class="panel"><h3>Dziś na Maderze <small>${plDate(NOW.date,{weekday:"long",day:"numeric",month:"long"})}</small></h3>
+      <div class="chips"><span class="chip">świt ${fmtT(t.dawn)}</span><span class="chip hot">wschód ${fmtT(t.sunrise)}</span><span class="chip hot">zachód ${fmtT(t.sunset)}</span><span class="chip">zmrok ${fmtT(t.dusk)}</span></div></div>`:""}
+    <div class="wx-grid">
+      <div class="panel"><h3>Pico Ruivo · zachód <small>śr 11.11</small></h3><p class="note" style="margin:0">Zachód <b class="mono">${fmtT(ruivo?.sunset)}</b>, złota godzina od <b class="mono">${fmtT(ruivo?.goldenHour)}</b>, zmrok cywilny <b class="mono">${fmtT(ruivo?.dusk)}</b>. Po zmroku zostaje ok. 25 minut szarówki na początek zejścia, a resztę schodzisz z czołówką.</p></div>
+      <div class="panel"><h3>Pico do Areeiro · wschód <small>pt 13.11</small></h3><p class="note" style="margin:0">Świt cywilny <b class="mono">${fmtT(areeiro?.dawn)}</b>, wschód <b class="mono">${fmtT(areeiro?.sunrise)}</b>. Najlepsze kolory są 20–30 minut przed wschodem, więc bądź na górze najpóźniej o <b class="mono">${fmtT(areeiro? new Date(areeiro.dawn-5*6e4):null)}</b>. Z Funchal jedzie się ok. 40 minut.</p></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>Dzień</th><th>Świt</th><th>Wschód</th><th>Koniec złotej godz.</th><th>Złota godz.</th><th>Zachód</th><th>Zmrok</th><th>Długość dnia</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---------- shell ---------- */
+function render(){
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===tab));
+  document.querySelectorAll("section[data-view]").forEach(s=>s.hidden = s.dataset.view!==tab);
+  ({plan:renderPlan,pogoda:renderWeather,kamery:renderCams,szlaki:renderTrails,slonce:renderSun})[tab]();
+  drawCharts();
+}
+document.addEventListener("click",e=>{
+  const t = e.target.closest(".tab"); if(t){tab=t.dataset.tab;render();scrollTo({top:0,behavior:"smooth"});return;}
+  const rg = e.target.closest("[data-region]"); if(rg){wxRegion=rg.dataset.region;render();$(".wx-detail")?.scrollIntoView({block:"start",behavior:"smooth"});return;}
+  const p = e.target.closest(".day-pill"); if(p){dayId=p.dataset.day;store.set("md26-day",dayId);render();return;}
+  const g = e.target.closest("[data-goto]"); if(g){e.preventDefault();tab=g.dataset.goto;render();scrollTo({top:0});return;}
+  const gd = e.target.closest("[data-goto-day]"); if(gd){dayId=gd.dataset.gotoDay;tab="plan";render();scrollTo({top:0});return;}
+  if(e.target.id==="wx-refresh"){e.target.textContent="Pobieranie…";loadLive().then(render).catch(()=>{e.target.textContent="Brak połączenia z serwerem pogody";});}
+});
+document.addEventListener("change",e=>{
+  if(!e.target.matches(".check")) return;
+  const i=+e.target.dataset.i; e.target.checked?done.add(i):done.delete(i); store.set("md26-done",[...done]); render();
+});
+
+addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(/^d[1-6]$/.test(h)){dayId=h;tab="plan";}else if(["plan","pogoda","kamery","szlaki","slonce"].includes(h))tab=h;else return;render();scrollTo({top:0});});
+renderStatus(); render(); drawContours();
+let lastW = innerWidth;
+addEventListener("resize",()=>{clearTimeout(window.__rz);window.__rz=setTimeout(()=>{drawContours(); if(innerWidth!==lastW){lastW=innerWidth;drawCharts();}},150)});
+addEventListener("load",()=>{renderStatus();render();});
+const refresh = () => loadLive().then(()=>{ if(!document.querySelector(".c-tip:not([hidden])")) render(); }).catch(()=>{});
+refresh();
+setInterval(()=>{ if(!document.hidden) refresh(); }, 15*60*1000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden && WX_LIVE && Date.now()-WX_TIME>10*60*1000) refresh(); });
+</script>
+</body></html>
